@@ -41,7 +41,7 @@ const Rmerchants = () => {
   };
 
   const findNearbyMerchants = (userLat, userLon) => {
-    const maxDistance = 20;
+    const maxDistance = 200;
     const nearby = userLocation.filter((merchant) => {
       const distance = getDistance(userLat, userLon, merchant.latitude, merchant.longitude);
       return distance <= maxDistance;

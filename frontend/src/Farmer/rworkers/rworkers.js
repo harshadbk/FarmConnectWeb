@@ -44,7 +44,7 @@ const Rworkers = () => {
 
   // Filter workers based on user's location
   const findNearbyWorkers = (userLat, userLon) => {
-    const maxDistance = 20; // Maximum distance in kilometers
+    const maxDistance = 200; // Maximum distance in kilometers
     const nearby = lat.filter((worker) => {
       const distance = getDistance(userLat, userLon, worker.latitude, worker.longitude);
       return distance <= maxDistance;

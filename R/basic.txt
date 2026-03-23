@@ -1,0 +1,175 @@
+Exp:2
+# 2.1 Create Vectors using different functions 
+vector1 <- c(1, 2, 3, 4, 5) 
+vector2 <- seq(10, 20, by = 2) 
+vector3 <- rep(5, times = 4) 
+# 2.2 Perform various mathematical operations on Vectors 
+sum_vector <- vector1 + vector2[1:5] 
+prod_vector <- vector1 * vector2[1:5] 
+diff_vector <- vector2[1:5] - vector1 
+div_vector <- vector2[1:5] / vector1 
+# 2.3 Create 2D 4x3 Array of a sequence of even integers greater than 40 
+even_array <- array(seq(42, 64, by = 2), dim = c(4, 3))
+
+Exp:3
+
+# 3.1 CSV File
+library(readr)
+csv_data <- read_csv("input.csv")
+head(csv_data)
+summary(csv_data)
+csv_data$new_column <- csv_data$existing_column * 2
+write_csv(csv_data, "output.csv")
+
+# 3.2 EXCEL File
+library(readxl)
+library(writexl)
+excel_data <- read_excel("input.xlsx")
+head(excel_data)
+summary(excel_data)
+excel_data$new_column <- excel_data$existing_column / 2
+write_xlsx(excel_data, "output.xlsx")
+
+Exp:4
+vector <- c(2, 4, 6, 8, 10)
+plot(vector, type = "o", col = "blue", pch = 16, lwd = 2, xlab = "Index", ylab = "Values", main = "Simple Graph with Elements", cex = 1.5)
+
+5)
+
+# 5.1 Linear Regression Model
+data <- data.frame(x = c(1, 2, 3, 4, 5), y = c(2, 4, 6, 8, 10))
+linear_model <- lm(y ~ x, data = data)
+summary(linear_model)
+
+# 5.2 Multiple Regression Model
+data <- data.frame(x1 = c(1, 2, 3, 4, 5), x2 = c(2, 3, 4, 5, 6), y = c(3, 5, 7, 9, 11))
+multiple_model <- lm(y ~ x1 + x2, data = data)
+summary(multiple_model)
+
+6) 
+person <- function(name, age) {
+  obj <- list(name = name, age = age)
+  class(obj) <- "person"
+  return(obj)
+}
+
+print.person <- function(x) {
+  cat("Name:", x$name, "\n")
+  cat("Age:", x$age, "\n")
+}
+
+summary.person <- function(x) {
+  cat("Summary of Person Object:\n")
+  cat("Name:", x$name, "\n")
+  cat("Age Category:", ifelse(x$age < 18, "Minor", "Adult"), "\n")
+}
+
+person1 <- person("John", 25)
+print(person1)
+summary(person1)
+
+7)
+
+# 7.1 Find row and column index of maximum and minimum value in a Matrix
+matrix_data <- matrix(c(5, 3, 8, 1, 4, 7, 6, 2, 9), nrow = 3, byrow = TRUE)
+max_index <- which(matrix_data == max(matrix_data), arr.ind = TRUE)
+min_index <- which(matrix_data == min(matrix_data), arr.ind = TRUE)
+
+# 7.2 Perform Inner, Outer, Left, and Right join operations on two Dataframes
+library(dplyr)
+
+df1 <- data.frame(ID = c(1, 2, 3), Name = c("A", "B", "C"))
+df2 <- data.frame(ID = c(2, 3, 4), Score = c(90, 85, 88))
+
+inner_join_df <- inner_join(df1, df2, by = "ID")
+outer_join_df <- full_join(df1, df2, by = "ID")
+left_join_df <- left_join(df1, df2, by = "ID")
+right_join_df <- right_join(df1, df2, by = "ID")
+
+
+8)
+
+# 8.1 Generate multiplication table for user-entered number
+num <- as.integer(readline(prompt = "Enter a number: "))
+table <- sapply(1:10, function(x) num * x)
+print(table)
+
+# 8.2 Create a simple calculator using switch control structure
+calculator <- function(a, b, op) {
+  result <- switch(op,
+                   "+" = a + b,
+                   "-" = a - b,
+                   "*" = a * b,
+                   "/" = ifelse(b != 0, a / b, "Division by zero not allowed"),
+                   "Invalid operation")
+  return(result)
+}
+
+a <- as.numeric(readline(prompt = "Enter first number: "))
+b <- as.numeric(readline(prompt = "Enter second number: "))
+op <- readline(prompt = "Enter operation (+, -, *, /): ")
+result <- calculator(a, b, op)
+print(result)
+
+9)
+
+# Sample data frame
+data <- data.frame(
+  category = c("A", "B", "C", "D"),
+  count = c(25, 40, 30, 50)
+)
+
+# Pie Chart
+pie(data$count, labels = data$category, main = "Pie Chart of Categories", col = c("red", "blue", "green", "yellow"))
+
+# Bar Chart
+barplot(data$count, names.arg = data$category, main = "Bar Chart of Categories", col = "purple", xlab = "Categories", ylab = "Count")
+
+# Histogram (Example using 'mpg' column from 'mtcars' data frame)
+hist(mtcars$mpg, main = "Histogram of Miles Per Gallon (mpg)", col = "orange", xlab = "Miles Per Gallon", breaks = 10)
+
+10)
+
+# Define an S4 class
+setClass(
+  "Person",
+  slots = c(name = "character", age = "numeric")
+)
+
+# Create an object of the S4 class
+person1 <- new("Person", name = "John", age = 30)
+
+# Display the object
+person1
+
+# Define a method to display the information of the object
+setMethod("show", "Person", function(object) {
+  cat("Person's Name:", object@name, "\n")
+  cat("Person's Age:", object@age, "\n")
+})
+
+# Define a method to check if the person is an adult
+setGeneric("isAdult", function(object) standardGeneric("isAdult"))
+setMethod("isAdult", "Person", function(object) {
+  if (object@age >= 18) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+})
+
+# Call the methods
+show(person1)
+isAdult(person1)
+
+11)
+
+# 11.1 Find the length of the first two components in a List
+my_list <- list(a = c(1, 2, 3), b = c(4, 5), c = c(6, 7, 8, 9))
+length_first_two <- c(length(my_list[[1]]), length(my_list[[2]]))
+print(length_first_two)
+
+# 11.2 Convert a Matrix into a List
+my_matrix <- matrix(1:9, nrow = 3, byrow = TRUE)
+matrix_as_list <- as.list(as.data.frame(my_matrix))
+print(matrix_as_list)

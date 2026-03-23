@@ -34,7 +34,7 @@ const Rshopkeeper = () => {
   };
 
   const findNearbyShopkeepers = (userLat, userLon) => {
-    const maxDistance = 50;
+    const maxDistance = 200;
     const nearby = shopkeepers.filter((shopkeeper) => {
       const distance = getDistance(userLat, userLon, shopkeeper.latitude, shopkeeper.longitude);
       return distance <= maxDistance;
