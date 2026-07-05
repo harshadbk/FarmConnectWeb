@@ -28,6 +28,7 @@ import FarmerCommunity from './Farmer/community/FCommunity';
 import Aii from './Farmer/Ai/ai';
 import Faddproduct from './Farmer/addproduct/faddproduct';
 import Success2 from './pages/success';
+import PaymentCallback from './pages/paymentCallback';
 import Rshopkeeper from './Farmer/rshopkeeper/rshopkeeper';
 import Rmerchants from './Farmer/rmerchants/rmerchants';
 import Rworkers from './Farmer/rworkers/rworkers';
@@ -72,6 +73,7 @@ function App() {
                         <Route path='/loginsignup' element={<LoginSignup />} />
                         <Route path='/checkout' element={<CheckoutPage />} />
                         <Route path='/payment' element={<Payment/>} />
+                        <Route path='/payment-callback' element={<PaymentCallback/>} />
                         <Route path='/profile' element={<Profile/>} />
                         <Route path='/shopkeeper' element={<ShopKeeper/>} />
                         <Route path='/addproduct' element={<AddProduct/>} />

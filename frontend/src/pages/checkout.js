@@ -88,7 +88,7 @@ const CheckoutPage = () => {
 
   const paymentMethods = [
     { id: 'credit-card', name: 'Credit/Debit Card' },
-    { id: 'upi', name: 'UPI Payments' },
+    { id: 'phonepe', name: 'PhonePe / UPI' },
     { id: 'bank-transfer', name: 'Bank Transfer' },
     { id: 'cash-on-delivery', name: 'Cash on Delivery' },
   ];

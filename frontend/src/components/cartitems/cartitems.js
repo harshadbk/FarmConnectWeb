@@ -78,13 +78,6 @@ const Cartitems = () => {
                     </div>
                    <Link to={'/checkout'}><button>PROCEED TO CHECKOUT</button></Link>
                 </div>
-                <div className="cartitems-promocode">
-                    <p>If you Have a promo code, Enter it Here</p>
-                    <div className="cartiyems-promobox">
-                        <input type="text" placeholder='promocode' />
-                        <button>Submit</button>
-                    </div>
-                </div>
             </div>
         </div>
     );

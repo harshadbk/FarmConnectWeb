@@ -35,7 +35,7 @@ const Pending = () => {
   };
   return (
     <div className='listpendingorders'>
-      <h1>All Pending Orders</h1>
+      <h1>All Complete Orders</h1>
       <br />
       <div className="listpendingorders-format-main">
         <p>Order Id</p>

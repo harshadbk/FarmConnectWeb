@@ -1,4 +1,5 @@
-const port = 5000;
+require('dotenv').config();
+const port = process.env.PORT || 5000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -12,20 +13,26 @@ const bcrypt = require("bcryptjs");
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret_ecom_farmconnect_2024';
 
+// Import modular payment routes (PhonePe integration)
+const paymentRoutes = require('./routes/payment.routes');
+const errorHandler = require('./middleware/errorHandler');
+
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-const MONGO_URI = "mongodb://HARSHAD:HARSHAD@ac-2ayfpqy-shard-00-00.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-01.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-02.yzv2blz.mongodb.net:27017/e-commerce?ssl=true&replicaSet=atlas-147c89-shard-0&authSource=admin&appName=Cluster0";
-// const MONGO_URI = "mongodb+srv://HARSHAD:HARSHAD@cluster0.yzv2blz.mongodb.net/?appName=Cluster0";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://HARSHAD:HARSHAD@ac-2ayfpqy-shard-00-00.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-01.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-02.yzv2blz.mongodb.net:27017/e-commerce?ssl=true&replicaSet=atlas-147c89-shard-0&authSource=admin&appName=Cluster0";
+
+console.log(`Connecting to MongoDB with URI: ${process.env.MONGO_URI ? 'env MONGO_URI' : 'hardcoded fallback'}`);
 
 mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log(" MongoDB Connected"))
+.then(() => console.log("MongoDB Connected"))
 .catch(err => {
-    console.error(" MongoDB Error:", err);
+    console.error("MongoDB Error:", err);
+    console.error("If using Atlas, ensure your current IP address is whitelisted or use 0.0.0.0/0!");
 });
 
 // Ensure upload directory exists
@@ -57,6 +64,56 @@ app.use('/images', express.static(uploadDir));
 // Test route
 app.get("/", (req, res) => {
     res.send("Express app is running");
+});
+
+// Backend-served payment callback page (fallback)
+// Displays payment status and provides a link to the frontend success page.
+app.get('/payment-callback', (req, res) => {
+        const phonePeConfig = require('./config/phonepe.config');
+        const status = req.query.status || 'unknown';
+        const id = req.query.id || '';
+        const frontendTarget = `${phonePeConfig.frontendUrl}/payment-callback?status=${encodeURIComponent(status)}&id=${encodeURIComponent(id)}`;
+
+        const html = `<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Payment Result</title>
+        <style>
+            body{font-family:Arial,Helvetica,sans-serif;background:#f7f7f9;color:#222;margin:0;padding:40px}
+            .card{max-width:760px;margin:40px auto;background:#fff;border-radius:8px;padding:28px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+            .status{font-size:20px;margin-bottom:8px}
+            .id{color:#666;margin-bottom:16px}
+            .actions{margin-top:20px}
+            .btn{display:inline-block;padding:12px 20px;border-radius:6px;text-decoration:none;color:#fff}
+            .btn-primary{background:#4f46e5}
+            .btn-secondary{background:#6b7280}
+        </style>
+        <script>
+            // Try to redirect to frontend after short delay (if available)
+            function tryRedirect(){
+                try { window.location.replace(${JSON.stringify(frontendTarget)}); } catch(e) { /* ignore */ }
+            }
+            setTimeout(tryRedirect, 1200);
+        </script>
+    </head>
+    <body>
+        <div class="card">
+            <h1>Payment ${status === 'success' ? 'Successful' : status === 'failed' ? 'Failed' : 'Result'}</h1>
+            <p class="status">Status: <strong>${status}</strong></p>
+            <p class="id">Reference ID: <strong>${id}</strong></p>
+            <p>If your frontend app is running, you will be redirected automatically. If not, you can open the frontend result page manually.</p>
+            <div class="actions">
+                <a class="btn btn-primary" href="${frontendTarget}">Open Frontend Result</a>
+                <a class="btn btn-secondary" href="/">Return to Backend Home</a>
+            </div>
+        </div>
+    </body>
+</html>`;
+
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
 });
 
 // Image upload endpoint
@@ -728,8 +785,41 @@ const Orders = mongoose.model('Orders', {
         require: true
     },
 
+    // PhonePe Payment Tracking Fields
     transactionId: {
         type: String,
+        default: null,
+    },
+
+    merchantTransactionId: {
+        type: String,
+        default: null,
+        index: true,
+    },
+
+    paymentStatus: {
+        type: String,
+        enum: ['PENDING', 'SUCCESS', 'FAILED', 'CANCELLED'],
+        default: 'PENDING',
+    },
+
+    paymentMethod: {
+        type: String,
+        default: null,
+    },
+
+    amount: {
+        type: Number,
+        default: 0,
+    },
+
+    paymentResponse: {
+        type: String,
+        default: null,
+    },
+
+    paymentDate: {
+        type: Date,
         default: null,
     },
 
@@ -756,14 +846,8 @@ const Orders = mongoose.model('Orders', {
 
 app.post(('/addorder'), async (req, res) => {
     try {
-        let orders = await Orders.find({});
-        let id;
-        if (orders.length > 0) {
-            let last_product = orders[orders.length - 1];
-            id = last_product.id + 1;
-        } else {
-            id = 1;
-        }
+        const lastOrder = await Orders.findOne().sort({ id: -1 });
+        const id = lastOrder ? (lastOrder.id || 0) + 1 : 1;
 
         const order = new Orders({
             id: id,
@@ -774,6 +858,10 @@ app.post(('/addorder'), async (req, res) => {
             contact: req.body.contact,
             payment: req.body.payment,
             transactionId: req.body.transactionId || null,
+            merchantTransactionId: req.body.merchantTransactionId || null,
+            paymentStatus: req.body.paymentStatus || 'PENDING',
+            paymentMethod: req.body.paymentMethod || req.body.payment,
+            amount: Number(req.body.amount) || 0,
             address: req.body.address,
             cartdata: req.body.cartdata,
             status: req.body.status
@@ -783,6 +871,8 @@ app.post(('/addorder'), async (req, res) => {
         res.json({
             success: true,
             name: req.body.name,
+            orderId: order._id,
+            merchantTransactionId: order.merchantTransactionId,
         });
 
     } catch (error) {
@@ -792,6 +882,23 @@ app.post(('/addorder'), async (req, res) => {
         });
     }
 })
+
+// Mount modular PhonePe payment routes
+app.use('/api/payment', paymentRoutes);
+
+// Legacy status endpoint (for backward compatibility)
+app.get('/status', async (req, res) => {
+    try {
+        const merchantTransactionId = req.query.id;
+        if (!merchantTransactionId) {
+            return res.status(400).json({ error: 'Transaction id is required' });
+        }
+        // Redirect to the new modular endpoint
+        return res.redirect(`/api/payment/status/${encodeURIComponent(merchantTransactionId)}`);
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
 
 // creating endpoint for fetching the pending orders
 
@@ -1925,6 +2032,9 @@ cron.schedule('* * * * *', async () => {
         }
     }
 });
+
+// Global error handler middleware (must be last)
+app.use(errorHandler);
 
 // Start the server
 app.listen(port, (error) => {

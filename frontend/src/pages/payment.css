@@ -1,44 +1,316 @@
-.flex {
-  display: flex;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    box-sizing:border-box;
 }
 
-.items-center {
-  align-items: center;
+.payment-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+    font-family:'Poppins',sans-serif;
+    background:
+        radial-gradient(circle at top left,#E8F5E9 0%,transparent 35%),
+        radial-gradient(circle at bottom right,#E3F2FD 0%,transparent 35%),
+        linear-gradient(135deg,#F9FFF9,#F5FFF7);
 }
 
-.justify-between {
-  justify-content: space-between;
+/* Card */
+
+.payment-panel{
+    width:100%;
+    max-width:520px;
+    background:#fff;
+    border-radius:30px;
+    padding:45px;
+    text-align:center;
+    box-shadow:0 18px 45px rgba(0,0,0,.08);
+    animation:fadeUp .7s ease;
 }
 
-.mx-20 {
-  margin-left: 20px;
-  margin-right: 20px;
+/* Heading */
+
+.payment-panel h2{
+    color:#2E7D32;
+    font-size:34px;
+    margin-bottom:10px;
 }
 
-.border-2 {
-  border-width: 2px;
+.payment-panel h2::after{
+    content:"";
+    display:block;
+    width:70px;
+    height:4px;
+    background:#43A047;
+    border-radius:20px;
+    margin:15px auto 0;
 }
 
-.max-w-3xl {
-  max-width: 48rem;
+/* Labels */
+
+.payment-label{
+    margin-top:28px;
+    color:#777;
+    font-size:15px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:1px;
 }
 
-.p-6 {
-  padding: 1.5rem;
+/* Amount */
+
+.payment-value{
+    margin-top:8px;
+    font-size:28px;
+    font-weight:700;
+    color:#2E7D32;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
+.payment-field{
+    margin-top:24px;
+    text-align:left;
 }
 
-.text-4xl {
-  font-size: 2.25rem;
+.payment-input{
+    width:100%;
+    margin-top:10px;
+    padding:14px 16px;
+    border:1px solid #D1E7D1;
+    border-radius:16px;
+    font-size:16px;
+    color:#263238;
+    outline:none;
+    transition:.25s;
 }
 
-.font-bold {
-  font-weight: 700;
+.payment-input:focus{
+    border-color:#43A047;
+    box-shadow:0 0 0 4px rgba(67,160,71,.08);
 }
 
-.mb-6 {
-  margin-bottom: 1.5rem;
+/* PhonePe Info Box */
+
+.payment-phonepe-box{
+    margin-top:24px;
+    background:linear-gradient(135deg,#F3E5F5 0%,#EDE7F6 50%,#E8EAF6 100%);
+    border:1px solid #CE93D8;
+    border-radius:24px;
+    padding:28px 22px;
+    text-align:center;
+}
+
+.phonepe-icon-wrap{
+    width:70px;
+    height:70px;
+    margin:0 auto;
+    background:linear-gradient(135deg,#7B1FA2,#9C27B0);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 8px 20px rgba(123,31,162,.3);
+    animation:pop .6s ease;
+}
+
+.phonepe-icon{
+    font-size:32px;
+}
+
+.phonepe-features{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    margin-top:16px;
+}
+
+.phonepe-features span{
+    background:white;
+    padding:6px 14px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:500;
+    color:#4A148C;
+    box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+
+.payment-note{
+    margin-top:16px;
+    font-size:14px;
+    color:#6A1B9A;
+}
+
+/* Legacy QR Box (kept for backward compatibility) */
+
+.payment-qr-box{
+    margin-top:24px;
+    background:#F1FFF1;
+    border:1px solid #C8E6C9;
+    border-radius:24px;
+    padding:22px;
+}
+
+.qr-image-wrap{
+    margin:18px auto 0;
+    width:220px;
+    height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:20px;
+    background:white;
+    box-shadow:0 12px 28px rgba(0,0,0,.08);
+}
+
+.payment-qr{
+    width:180px;
+    height:180px;
+    object-fit:contain;
+}
+
+.payment-qr-box .payment-label{
+    text-transform:none;
+    margin-top:0;
+}
+
+/* Error */
+
+.payment-error{
+    margin-top:25px;
+    padding:14px;
+    border-radius:12px;
+    background:#FFEBEE;
+    color:#C62828;
+    font-size:15px;
+}
+
+/* Buttons */
+
+.payment-button{
+    width:100%;
+    margin-top:35px;
+    padding:18px;
+    border:none;
+    border-radius:50px;
+    background:linear-gradient(135deg,#43A047,#66BB6A);
+    color:white;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.35s;
+    box-shadow:0 10px 25px rgba(67,160,71,.28);
+}
+
+.payment-button:hover:not(:disabled){
+    transform:translateY(-4px);
+    box-shadow:0 18px 40px rgba(67,160,71,.35);
+}
+
+.payment-button:disabled{
+    background:#B9E2BF;
+    cursor:not-allowed;
+    box-shadow:none;
+}
+
+/* Back Button */
+
+.payment-back{
+    width:100%;
+    margin-top:18px;
+    padding:16px;
+    border:2px solid #43A047;
+    border-radius:50px;
+    background:white;
+    color:#43A047;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.35s;
+}
+
+.payment-back:hover{
+    background:#43A047;
+    color:white;
+}
+
+/* Secure Box */
+
+.payment-panel::before{
+    content:"🔒 Secure Payment";
+    display:inline-block;
+    background:#F1FFF1;
+    color:#2E7D32;
+    padding:8px 18px;
+    border-radius:50px;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:20px;
+}
+
+/* Animation */
+
+@keyframes fadeUp{
+
+from{
+    opacity:0;
+    transform:translateY(40px);
+}
+
+to{
+    opacity:1;
+    transform:translateY(0);
+}
+
+}
+
+@keyframes pop{
+
+0%{
+    transform:scale(.5);
+    opacity:0;
+}
+
+80%{
+    transform:scale(1.1);
+}
+
+100%{
+    transform:scale(1);
+    opacity:1;
+}
+
+}
+
+/* Mobile */
+
+@media(max-width:600px){
+
+.payment-panel{
+    padding:30px 22px;
+}
+
+.payment-panel h2{
+    font-size:28px;
+}
+
+.payment-value{
+    font-size:24px;
+}
+
+.payment-button,
+.payment-back{
+    font-size:15px;
+}
+
+.phonepe-features{
+    gap:6px;
+}
+
+.phonepe-features span{
+    font-size:12px;
+    padding:5px 10px;
+}
+
 }

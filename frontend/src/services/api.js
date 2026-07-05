@@ -1,4 +1,6 @@
 // API Service Layer for FarmConnect
+// All backend API calls are centralized here
+
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // Create an API client with default headers
@@ -157,28 +159,56 @@ export const orderAPI = {
   },
 };
 
+/**
+ * PhonePe Payment APIs
+ * 
+ * All payment operations go through the main backend (port 5000)
+ * under the /api/payment/* route prefix.
+ * 
+ * The salt key and checksum generation happen ONLY on the backend.
+ * The frontend never touches sensitive credentials.
+ */
 export const paymentAPI = {
-  createPhonePeOrder: async (payload) => {
-    const response = await fetch('http://localhost:7000/order', {
+  /**
+   * Initiate a PhonePe payment
+   * Calls: POST /api/payment/initiate
+   * 
+   * @param {Object} payload
+   * @param {number} payload.amount - Amount in INR
+   * @param {string} payload.userId - Customer email/ID
+   * @param {string} payload.name - Customer full name
+   * @param {string} payload.mobile - Customer mobile number
+   * @returns {Object} { success, merchantTransactionId, paymentUrl }
+   */
+  initiatePayment: async (payload) => {
+    const response = await fetch(`${API_URL}/api/payment/initiate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error || 'Payment initialization failed');
+      throw new Error(data.error || 'Payment initiation failed');
     }
     return data;
   },
 
-  getPaymentStatus: async (transactionId) => {
-    const response = await fetch(`http://localhost:7000/status?id=${transactionId}`);
+  /**
+   * Check payment status
+   * Calls: GET /api/payment/status/:merchantTransactionId
+   * 
+   * @param {string} merchantTransactionId
+   * @returns {Object} { success, paymentStatus, transactionId, amount, paymentMethod }
+   */
+  getPaymentStatus: async (merchantTransactionId) => {
+    const response = await fetch(
+      `${API_URL}/api/payment/status/${encodeURIComponent(merchantTransactionId)}`
+    );
+
     const data = await response.json();
     if (!response.ok) {
-      throw new Error(data.error || 'Payment status lookup failed');
+      throw new Error(data.error || 'Payment status check failed');
     }
     return data;
   },
