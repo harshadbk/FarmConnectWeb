@@ -7,6 +7,7 @@ import ShopCategory from './pages/ShopCategory';
 import Product from './pages/product';
 import Cart from './pages/cart';
 import LoginSignup from './pages/loginsignup';
+import Products from './pages/Products';
 import Footer from './components/footer/footer';
 import p_1 from './components/Assets/banner_1.jpg';
 import p_15 from './components/Assets/banner_4.jpg';
@@ -49,6 +50,16 @@ function App() {
                     <Navbar />
                     <Routes>
                         <Route path='/' element={<Shop />} />
+                        <Route path='/products' element={<Products />} />
+                        <Route path='/products/seeds' element={<ShopCategory banner={SB} category="Seeds" />} />
+                        <Route path='/products/fertilizers' element={<ShopCategory banner={p_1} category="Fertilizers" />} />
+                        <Route path='/products/pesticides' element={<ShopCategory banner={p_15} category="Pesticides" />} />
+                        <Route path='/products/equipment' element={<ShopCategory banner={HB} category="Equipment" />} />
+                        <Route path='/products/irrigation' element={<ShopCategory banner={p_33} category="Irrigation" />} />
+                        <Route path='/products/animal-husbandry' element={<ShopCategory banner={p_32} category="Animal Husbandry" />} />
+                        <Route path='/products/cane' element={<ShopCategory banner={p_31} category="Cane" />} />                        <Route path='/products/cane' element={<ShopCategory banner={p_31} category="Cane" />} />                        <Route path='/products/crops' element={<ShopCategory banner={p_31} category="Crops" />} />
+                        <Route path='/products/organic' element={<ShopCategory banner={p_31} category="Organic" />} />
+                        <Route path='/products/gardening' element={<ShopCategory banner={p_32} category="Gardening" />} />
                         <Route path='/Fertilizers' element={<ShopCategory banner={p_1} category="Fertilizers" />} />
                         <Route path='/Pesticides' element={<ShopCategory banner={p_15} category="Pesticides" />} />
                         <Route path='/Organic' element={<ShopCategory banner={p_31} category="Organic" />} />
@@ -56,9 +67,7 @@ function App() {
                         <Route path='/seed' element={<ShopCategory banner={SB} category="seed" />}/>
                         <Route path='/others' element={<ShopCategory banner={p_32} category="others" />}/>
                         <Route path='/stationary' element={<ShopCategory banner={p_33} category="stationary" />}/>
-                        <Route path='/product' element={<Product />}>
-                            <Route path=':productId' element={<Product />} />
-                        </Route>
+                        <Route path='/product/:productId' element={<Product />} />
                         <Route path='/cart' element={<Cart />} />
                         <Route path='/loginsignup' element={<LoginSignup />} />
                         <Route path='/checkout' element={<CheckoutPage />} />

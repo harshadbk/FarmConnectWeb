@@ -10,7 +10,7 @@ const footer = () => {
     <div className='footer'>
       <div className="footer-logo">
         <img src={footer_logo} alt="" />
-        <p>VISHWA_AGRO SERVICES</p>
+        <p>FARM CONNECT</p>
       </div>
       <ul className="footer-links">
         <li>Compony</li>
@@ -33,7 +33,7 @@ const footer = () => {
       </div>
       <div className="footer-copyright">
         <hr />
-        <p>Copyright @ 2024 App Right Reserved</p>
+        <p>Copyright @ 2026 App Right Reserved</p>
       </div>
     </div>
   )

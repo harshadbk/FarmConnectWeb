@@ -120,6 +120,26 @@ const Product = mongoose.model("product", {
         type: String,
         required: true
     },
+    subcategory: {
+        type: String,
+        default: ''
+    },
+    brand: {
+        type: String,
+        default: ''
+    },
+    unit: {
+        type: String,
+        default: 'unit'
+    },
+    stock: {
+        type: Number,
+        default: 0
+    },
+    options: {
+        type: Object,
+        default: {}
+    },
     new_price: {
         type: Number,
         required: true
@@ -159,7 +179,12 @@ app.post('/addproduct', async (req, res) => {
             description: req.body.description,
             image: req.body.image,
             category: req.body.category,
+            subcategory: req.body.subcategory || '',
             crop_type: req.body.crop_type,
+            brand: req.body.brand || '',
+            unit: req.body.unit || 'unit',
+            stock: Number(req.body.stock) || 0,
+            options: req.body.options || {},
             new_price: req.body.new_price,
             old_price: req.body.old_price,
         });
@@ -1320,6 +1345,21 @@ app.post('/allsproducts', async (req, res) => {
     console.log("Products Fetched for ", email);
     res.send(products);
 })
+
+app.get('/myproducts', fetchuser, async (req, res) => {
+    try {
+        const user = await Users.findById(req.user.id);
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+        const products = await Product.find({ email: user.email });
+        console.log("Products Fetched for logged-in user", user.email);
+        res.json(products);
+    } catch (error) {
+        console.error("Error fetching my products:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // creating Api for fetching the shopkeeper data for perticular product
 

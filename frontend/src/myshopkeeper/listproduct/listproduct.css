@@ -17,8 +17,14 @@
     font-weight: 600;
   }
   
+  .listproduct-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+  }
+
   .listproduct-table {
     width: 100%;
+    min-width: 1000px;
     border-collapse: collapse;
     margin-top: 20px;
   }
@@ -28,6 +34,7 @@
     padding: 12px 15px;
     text-align: center;
     border: 1px solid #ddd;
+    word-break: break-word;
   }
   
   .listproduct-table th {

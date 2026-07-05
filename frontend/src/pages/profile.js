@@ -512,10 +512,6 @@ const Profile = () => {
                                 <td>{data.email}</td>
                             </tr>
                             <tr>
-                                <td>Password:</td>
-                                <td>{data.password}</td>
-                            </tr>
-                            <tr>
                                 <td>Role:</td>
                                 <td>{data.role}</td>
                             </tr>

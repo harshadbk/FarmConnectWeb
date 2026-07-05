@@ -1,69 +1,226 @@
-/* offers.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-.offers {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 50px;
-    background: linear-gradient(to right, #f0f0f0, #dcdcdc);
-    box-sizing: border-box;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/*=========================
+OFFERS SECTION
+=========================*/
+
+.offers{
+    width:90%;
+    max-width:1350px;
+    margin:90px auto;
+    padding:70px 7%;
+    border-radius:35px;
+    background:
+        radial-gradient(circle at top left,#dfffe1 0%,transparent 40%),
+        radial-gradient(circle at bottom right,#d9f4ff 0%,transparent 40%),
+        linear-gradient(135deg,#ffffff,#f8fff8);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:60px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,.08);
+    font-family:'Poppins',sans-serif;
 }
 
-.offers-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 20px;
-    padding: 0 20px;
+/* Floating background */
+
+.offers::before,
+.offers::after{
+    content:'';
+    position:absolute;
+    border-radius:50%;
+    filter:blur(90px);
+    opacity:.35;
+    animation:offerFloat 10s ease-in-out infinite;
 }
 
-.offers-left h1 {
-    color: #333;
-    font-size: 48px;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.1;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+.offers::before{
+    width:260px;
+    height:260px;
+    background:#55d46a;
+    top:-120px;
+    left:-120px;
 }
 
-.offers-left p {
-    color: #555;
-    font-size: 24px;
-    font-weight: 400;
-    margin: 10px 0;
+.offers::after{
+    width:260px;
+    height:260px;
+    background:#62b8ff;
+    bottom:-120px;
+    right:-120px;
 }
 
-.offers-left button {
-    width: 200px;
-    height: 50px;
-    background: #ff4d4d;
-    color: white;
-    font-size: 18px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    border-radius: 5px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+@keyframes offerFloat{
+    0%,100%{
+        transform:translateY(0);
+    }
+    50%{
+        transform:translateY(35px);
+    }
 }
 
-.offers-left button:hover {
-    background: #e60000;
+/*=========================
+LEFT
+=========================*/
+
+.offers-left{
+    flex:1;
+    position:relative;
+    z-index:2;
+    animation:slideLeft .9s ease;
 }
 
-.offers-right {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.offers-left h1{
+    font-size:58px;
+    color:#18411f;
+    line-height:1.1;
+    font-weight:800;
 }
 
-.offers-right img {
-    height: 300px;
-    width: 500px;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.offers-left h1:last-child{
+    background:linear-gradient(90deg,#2ba644,#6bd96f);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.offers-left p{
+    margin-top:25px;
+    font-size:20px;
+    color:#555;
+    line-height:1.8;
+}
+
+/*=========================
+BUTTON
+=========================*/
+
+.offers-left button{
+    margin-top:40px;
+    padding:18px 42px;
+    border:none;
+    border-radius:60px;
+    background:linear-gradient(135deg,#2ba644,#1f9136);
+    color:white;
+    font-size:17px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.4s;
+    box-shadow:0 15px 35px rgba(43,166,68,.35);
+}
+
+.offers-left button:hover{
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 22px 45px rgba(43,166,68,.45);
+}
+
+/*=========================
+RIGHT IMAGE
+=========================*/
+
+.offers-right{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+    z-index:2;
+    animation:slideRight 1s ease;
+}
+
+.offers-right img{
+    width:100%;
+    max-width:500px;
+    border-radius:30px;
+    box-shadow:0 30px 70px rgba(0,0,0,.15);
+    transition:.5s;
+    animation:imageFloat 5s ease-in-out infinite;
+}
+
+.offers-right img:hover{
+    transform:scale(1.05);
+}
+
+@keyframes imageFloat{
+    0%,100%{
+        transform:translateY(0);
+    }
+    50%{
+        transform:translateY(-18px);
+    }
+}
+
+/*=========================
+ANIMATIONS
+=========================*/
+
+@keyframes slideLeft{
+    from{
+        opacity:0;
+        transform:translateX(-70px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+@keyframes slideRight{
+    from{
+        opacity:0;
+        transform:translateX(70px);
+    }
+    to{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
+
+/*=========================
+RESPONSIVE
+=========================*/
+
+@media(max-width:1100px){
+
+.offers{
+    flex-direction:column-reverse;
+    text-align:center;
+    padding:60px 8%;
+}
+
+.offers-left h1{
+    font-size:46px;
+}
+
+.offers-left p{
+    font-size:18px;
+}
+
+}
+
+@media(max-width:768px){
+
+.offers{
+    width:95%;
+    padding:45px 6%;
+    margin:60px auto;
+}
+
+.offers-left h1{
+    font-size:34px;
+}
+
+.offers-left p{
+    font-size:16px;
+}
+
+.offers-left button{
+    width:100%;
+}
+
+.offers-right img{
+    max-width:100%;
+}
+
 }

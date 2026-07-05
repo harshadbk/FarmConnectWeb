@@ -39,39 +39,49 @@ const ListProduct = () => {
     <div className='listproduct'>
       <h1>All My Products List</h1>
       <br />
-      <table className="listproduct-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Title</th>
-            <th>Old Price</th>
-            <th>New Price</th>
-            <th>Category</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {allproducts.map((product, index) => (
-            <tr key={index}>
-              <td>
-                <img className='listproduct-product-icon' src={product.image} alt="" />
-              </td>
-              <td>{product.name}</td>
-              <td>${product.old_price}</td>
-              <td>${product.new_price}</td>
-              <td>{product.category}</td>
-              <td>
-                <img 
-                  onClick={() => remove_product(product.id)} 
-                  className='listproduct-remove-icon' 
-                  src={remove_icon} 
-                  alt="Remove" 
-                />
-              </td>
+      <div className="listproduct-table-wrapper">
+        <table className="listproduct-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Title</th>
+              <th>Brand</th>
+              <th>Old Price</th>
+              <th>New Price</th>
+              <th>Stock</th>
+              <th>Category</th>
+              <th>Subcategory</th>
+              <th>Options</th>
+              <th>Remove</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {allproducts.map((product, index) => (
+              <tr key={index}>
+                <td>
+                  <img className='listproduct-product-icon' src={product.image} alt="" />
+                </td>
+                <td>{product.name}</td>
+                <td>{product.brand || '-'}</td>
+                <td>${product.old_price}</td>
+                <td>${product.new_price}</td>
+                <td>{product.stock ?? 0} {product.unit || ''}</td>
+                <td>{product.category}</td>
+                <td>{product.subcategory || '-'}</td>
+                <td>{product.options && typeof product.options === 'object' ? Object.entries(product.options).map(([key, value]) => `${key}: ${value}`).join(', ') : '-'}</td>
+                <td>
+                  <img 
+                    onClick={() => remove_product(product.id)} 
+                    className='listproduct-remove-icon' 
+                    src={remove_icon} 
+                    alt="Remove" 
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
