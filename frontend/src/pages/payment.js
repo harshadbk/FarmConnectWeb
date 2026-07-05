@@ -1,136 +1,109 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, useContext } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './payment.css';
+import { paymentAPI, orderAPI } from '../services/api';
+import { shopContext } from '../context/shopcontext';
 
 const Payment = () => {
+  const { clearCart } = useContext(shopContext);
   const location = useLocation();
-  const subtotal = location.state?.subtotal || 0;
-
-  const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [amount, setAmount] = useState(subtotal);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const orderDetails = location.state?.orderDetails;
+  const cartItems = location.state?.cartItems || [];
+  const selectedPaymentMethod = location.state?.selectedPaymentMethod;
+  const amount = location.state?.amount || 0;
+  const paymentMethod = selectedPaymentMethod?.name || 'Selected Payment Method';
 
   useEffect(() => {
-    setAmount(subtotal);
-  }, [subtotal]);
+    if (!orderDetails || !selectedPaymentMethod || cartItems.length === 0) {
+      navigate('/checkout');
+    }
+  }, [orderDetails, selectedPaymentMethod, cartItems.length, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const data = {
-      name,
-      mobile,
-      amount,
-      MUID: `MUIDW${Date.now()}`,
-      transactionId: `T${Date.now()}`,
-    };
+    setError('');
+    setSaving(true);
 
     try {
-      const response = await fetch("http://localhost:7000/order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const orderPayload = {
+        ...orderDetails,
+        payment: paymentMethod,
+        cartdata: cartItems,
+        status: false,
+      };
+
+      if (selectedPaymentMethod?.id !== 'cash-on-delivery') {
+        const transactionId = `txn_${Date.now()}`;
+        const paymentResponse = await paymentAPI.createPhonePeOrder({
+          MUID: orderDetails.email,
+          transactionId,
+          amount: Number(amount),
+          name: `${orderDetails.name} ${orderDetails.lname}`,
+          mobile: orderDetails.contact,
+        });
+
+        orderPayload.transactionId = transactionId;
+        const paymentData = paymentResponse?.data || paymentResponse || {};
+        const paymentUrl = paymentData.paymentUrl || paymentData.redirectUrl || paymentData.data?.paymentUrl || paymentData.data?.redirectUrl;
+
+        if (paymentUrl) {
+          await orderAPI.createOrder(orderPayload);
+          window.location.assign(paymentUrl);
+          return;
+        }
+
+        if (paymentData.success === false) {
+          throw new Error(paymentData.error || paymentData.message || 'Payment initiation failed');
+        }
+      }
+
+      const response = await orderAPI.createOrder(orderPayload);
+      if (!response.success) {
+        throw new Error(response.error || 'Order save failed');
+      }
+
+      if (selectedPaymentMethod?.id === 'cash-on-delivery') {
+        clearCart();
+      }
+
+      navigate('/success', {
+        state: {
+          amount: amount.toString(),
+          paymentMethod,
+          transactionId: orderPayload.transactionId || null,
+          message: selectedPaymentMethod?.id === 'cash-on-delivery' ? 'Order placed with Cash on Delivery' : 'Payment initiated successfully',
         },
-        body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result?.data?.instrumentResponse?.redirectInfo?.url) {
-        window.location.href = result.data.instrumentResponse.redirectInfo.url;
-      }
-    } catch (error) {
-      console.error("Frontend Error Details: ", error.message);
+    } catch (err) {
+      setError(err.message || 'Payment failed. Please try again.');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-between h-[600px] mx-20">
-      <div className="w-1/2 border-2 max-w-3xl p-6 rounded-md border-dashed border-[#6739B7]">
+    <div className='payment-page'>
+      <div className='payment-panel'>
+        <h2>Confirm Your Payment</h2>
+        <p className='payment-label'>Amount</p>
+        <p className='payment-value'>₹{amount}</p>
+        <p className='payment-label'>Method</p>
+        <p className='payment-value'>{paymentMethod}</p>
+
+        {error && <div className='payment-error'>{error}</div>}
+
         <form onSubmit={handleSubmit}>
-          <h2 className="text-4xl font-bold mb-6 text-[#6739B7]">Make a Payment</h2>
-
-          <div className="mb-6">
-            <label htmlFor="Name" className="block text-sm font-medium leading-6 text-gray-900">
-              Name
-            </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <input
-                id="Name"
-                name="Name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                placeholder="Enter your Name"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="Mobile" className="block text-sm font-medium leading-6 text-gray-900">
-              Mobile
-            </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <input
-                id="Mobile"
-                name="Mobile"
-                type="text"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                required
-                placeholder="Enter your Mobile number"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset"
-              />
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <label htmlFor="Amount" className="block text-sm font-medium leading-6 text-gray-900">
-              Amount
-            </label>
-            <div className="relative mt-2 rounded-md shadow-sm">
-              <input
-                id="Amount"
-                name="Amount"
-                type="text"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-                placeholder="Enter the Amount"
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center">
-                <select
-                  id="currency"
-                  name="currency"
-                  className="h-full py-0 pl-2 text-gray-500 bg-transparent border-0 rounded-md pr-7 focus:ring-2"
-                >
-                  <option>INR</option>
-                  <option>CAD</option>
-                  <option>EUR</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#6739B7] text-white font-semibold rounded-md hover:bg-primary-dark"
-          >
-            {loading ? "Processing..." : "Pay Now"}
+          <button type='submit' className='payment-button' disabled={saving}>
+            {saving ? 'Processing...' : 'Confirm Payment'}
           </button>
         </form>
+
+        <button className='payment-back' onClick={() => navigate('/checkout')}>
+          Back to Checkout
+        </button>
       </div>
     </div>
   );

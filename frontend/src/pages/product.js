@@ -14,7 +14,13 @@ const Product = () => {
     return <div>Loading...</div>;
   }
 
-  const product = allProduct.find((e) => e.id === Number(productId));
+  const product = allProduct.find((e) => {
+    // support numeric `id` and MongoDB `_id` string
+    if (e.id !== undefined && !isNaN(Number(productId))) {
+      return Number(e.id) === Number(productId);
+    }
+    return e._id === productId || String(e.id) === String(productId);
+  });
 
   if (!product) {
     return <div>Product not found</div>;

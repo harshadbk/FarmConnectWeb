@@ -1,12 +1,23 @@
-import "./ai.css";
-import { useState } from "react";
+import './ai.css';
+import { useState } from 'react';
 
 function Ai() {
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [chatLog, setChatLog] = useState([]);
 
   async function generateAnswer() {
-    setAnswer("Loading ...");
+    if (!question.trim()) {
+      setAnswer('Please enter a question for Gemini.');
+      return;
+    }
+
+    setLoading(true);
+    setAnswer('');
+
+    const userEntry = { speaker: 'user', text: question.trim() };
+    setChatLog((prev) => [...prev, userEntry]);
 
     try {
       const requestData = {
@@ -14,7 +25,7 @@ function Ai() {
           {
             parts: [
               {
-                text: `Question: ${question}`,
+                text: `You are a friendly agriculture assistant. Answer clearly and respectfully for farmers, shopkeepers, merchants, and workers. Question: ${question.trim()}`,
               },
             ],
           },
@@ -22,11 +33,11 @@ function Ai() {
       };
 
       const response = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyDplmHAXBzIp6txPJAybdUUrPOQ-iLioFs",
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyDplmHAXBzIp6txPJAybdUUrPOQ-iLioFs',
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestData),
         }
@@ -37,49 +48,62 @@ function Ai() {
       }
 
       const data = await response.json();
-      setAnswer(data.candidates[0].content.parts[0].text);
+      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Gemini did not return a response. Please try again.';
+      setAnswer(reply);
+      setChatLog((prev) => [...prev, { speaker: 'ai', text: reply }]);
     } catch (error) {
-      console.error("Error generating answer:", error);
-      setAnswer("An error occurred. Please try again.");
+      console.error('Error generating answer:', error);
+      const errorText = 'An error occurred while connecting to Gemini. Please try again.';
+      setAnswer(errorText);
+      setChatLog((prev) => [...prev, { speaker: 'ai', text: errorText }]);
+    } finally {
+      setLoading(false);
+      setQuestion('');
     }
   }
 
   return (
-    <div className="container">
-      <h1 className="app-title">Farm Connect AI</h1>
+    <div className='ai-shell'>
+      <div className='ai-panel'>
+        <h1>FarmConnect AI Assistant</h1>
+        <p>Ask about crops, payments, market prices or farming advice.</p>
 
-      <div className="textarea-container">
-        <textarea
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          cols={30}
-          rows={10}
-          placeholder="Ask about crops, market prices, or farming tips..."
-          className="question-input"
-        ></textarea>
-      </div>
+        <div className='ai-input-group'>
+          <textarea
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder='Ask about soil, weather, pricing, or product recommendations...'
+          />
+          <button onClick={generateAnswer} disabled={loading}>
+            {loading ? 'Thinking...' : 'Ask Gemini'}
+          </button>
+        </div>
 
-      <div className="button-container">
-        <button className="generate-button" onClick={generateAnswer}>
-          {answer === "Loading ..." ? (
-            <div className="loader"></div>
-          ) : (
-            "Generate Answer"
-          )}
-        </button>
-      </div>
+        <div className='ai-chat-log'>
+          {chatLog.map((entry, index) => (
+            <div key={index} className={`chat-entry chat-${entry.speaker}`}>
+              <div className='chat-label'>{entry.speaker === 'user' ? 'You' : 'Gemini'}</div>
+              <div className='chat-text'>{entry.text}</div>
+            </div>
+          ))}
+        </div>
 
-      {answer && <pre className="answer-box">{answer}</pre>}
+        {answer && (
+          <div className='ai-answer-box'>
+            <h2>Latest Response</h2>
+            <p>{answer}</p>
+          </div>
+        )}
 
-      <div className="example-questions">
-        <h2>Example Questions:</h2>
-        <ul>
-          <li>What are the best crops to plant in Nashik during monsoon?</li>
-          <li>How much do tomatoes cost in the local market?</li>
-          <li>What are the latest farming techniques for organic farming?</li>
-          <li>What fertilizers are suitable for my soil type?</li>
-          <li>How can I increase the yield of my crops?</li>
-        </ul>
+        <div className='ai-examples'>
+          <h3>Try asking</h3>
+          <ul>
+            <li>What crops suit my monsoon farm?</li>
+            <li>How can I grow tomatoes with low cost?</li>
+            <li>Is UPI or cash better for my buyers?</li>
+            <li>How do I avoid pests naturally?</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

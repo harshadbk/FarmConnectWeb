@@ -1,49 +1,36 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Success = () => {
-  const [loading, setLoading] = useState(true);   // State to handle loading
-  const [paymentStatus, setPaymentStatus] = useState(null); // State to store payment status
+  const location = useLocation();
   const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const transactionId = searchParams.get('id') || location.state?.transactionId;
+  const amount = location.state?.amount || '0.00';
+  const paymentMethod = location.state?.paymentMethod || 'Payment';
+  const message = location.state?.message || (transactionId ? 'Payment recorded. Thank you!' : 'Your order was placed successfully.');
 
   useEffect(() => {
-    const checkPaymentStatus = async () => {
-      try {
-        const transactionId = localStorage.getItem('transactionId');
-        const response = await fetch(`http://localhost:7000/status?id=${transactionId}`);
-        const result = await response.json();
-
-        if (response.ok) {
-          setPaymentStatus(result?.success ? 'success' : 'failure');
-        } else {
-          setPaymentStatus('failure');
-        }
-      } catch (error) {
-        console.error('Error checking payment status:', error.message);
-        setPaymentStatus('failure');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkPaymentStatus();
-  }, []);
-
-  useEffect(() => {
-    if (paymentStatus === 'failure') {
-      navigate('/failure');
+    if (!location.state && !transactionId) {
+      navigate('/');
     }
-  }, [paymentStatus, navigate]);
+  }, [location.state, navigate, transactionId]);
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      {loading ? (
-        <h2 className="text-3xl font-bold text-blue-600">Checking Payment Status...</h2>
-      ) : paymentStatus === 'success' ? (
-        <h2 className="text-3xl font-bold text-green-600">Payment Successful!</h2>
-      ) : (
-        <h2 className="text-3xl font-bold text-red-600">Payment Failed!</h2>
-      )}
+    <div className='success-page'>
+      <div className='success-panel'>
+        <h1>Payment Successful!</h1>
+        <p>Your order was placed successfully.</p>
+        <div className='success-summary'>
+          <p>{message}</p>
+          <p><strong>Amount Paid:</strong> ₹{amount}</p>
+          <p><strong>Payment Method:</strong> {paymentMethod}</p>
+          {transactionId && <p><strong>Transaction ID:</strong> {transactionId}</p>}
+        </div>
+        <button className='success-button' onClick={() => navigate('/')}>
+          Continue Shopping
+        </button>
+      </div>
     </div>
   );
 };

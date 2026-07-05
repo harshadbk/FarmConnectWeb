@@ -22,7 +22,7 @@ app.post("/order", async (req, res) => {
       merchantTransactionId: transactionId,
       name: name,
       amount: amount * 100,
-      redirectUrl: `http://localhost:3001/success?id=${transactionId}`, // Update the URL format
+      redirectUrl: `http://localhost:3000/success?id=${transactionId}`,
       redirectMode: "POST",
       mobileNumber: mobile,
       paymentInstrument: { type: "PAY_PAGE" },

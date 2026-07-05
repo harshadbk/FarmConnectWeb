@@ -1,27 +1,32 @@
 const port = 5000;
 const express = require("express");
 const app = express();
-const cron = require('node-cron');
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
-const {
-    type
-} = require("os");
+const cron = require("node-cron");
+const bcrypt = require("bcryptjs");
+
+const JWT_SECRET = process.env.JWT_SECRET || 'secret_ecom_farmconnect_2024';
 
 app.use(express.json());
 app.use(cors());
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// database connection with MongoDB
-mongoose.connect("mongodb+srv://HARSHAD:HARSHAD@cluster0.yzv2blz.mongodb.net/e-commerce", {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    })
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.log(err));
+const MONGO_URI = "mongodb://HARSHAD:HARSHAD@ac-2ayfpqy-shard-00-00.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-01.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-02.yzv2blz.mongodb.net:27017/e-commerce?ssl=true&replicaSet=atlas-147c89-shard-0&authSource=admin&appName=Cluster0";
+// const MONGO_URI = "mongodb+srv://HARSHAD:HARSHAD@cluster0.yzv2blz.mongodb.net/?appName=Cluster0";
+
+mongoose.connect(MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log(" MongoDB Connected"))
+.catch(err => {
+    console.error(" MongoDB Error:", err);
+});
 
 // Ensure upload directory exists
 const uploadDir = './upload/images';
@@ -196,6 +201,151 @@ app.get('/allproducts', async (req, res) => {
     res.send(products);
 })
 
+// Endpoint for filtering products by category
+app.get('/product/category/:category', async (req, res) => {
+    try {
+        const { category } = req.params;
+        const products = await Product.find({ category: category });
+        console.log(`Products fetched for category: ${category} (${products.length} items)`);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// Endpoint to seed database with sample products (with force option)
+app.get('/seed-products', async (req, res) => {
+    try {
+        // Check if products already exist
+        const existingCount = await Product.countDocuments({});
+        const force = req.query.force === 'true';
+        
+        if (existingCount > 0 && !force) {
+            return res.json({
+                success: false,
+                message: 'Database already has products. Use ?force=true to reseed.',
+                count: existingCount
+            });
+        }
+
+        // Clear existing products if force is true
+        if (force && existingCount > 0) {
+            await Product.deleteMany({});
+            console.log("✅ Cleared existing products");
+        }
+
+        // Get list of uploaded images
+        const fs = require('fs');
+        const imagePath = './upload/images';
+        let uploadedImages = [];
+        
+        try {
+            uploadedImages = fs.readdirSync(imagePath).filter(file => 
+                file.endsWith('.jpg') || file.endsWith('.jpeg') || file.endsWith('.png')
+            );
+        } catch (err) {
+            console.log("No uploaded images found, using placeholder URLs");
+        }
+
+        // Function to assign image from uploaded images
+        const getImageUrl = (index) => {
+            if (uploadedImages.length > 0) {
+                const imgIndex = index % uploadedImages.length;
+                return `http://localhost:5000/images/${uploadedImages[imgIndex]}`;
+            }
+            return `http://localhost:5000/images/placeholder.jpg`;
+        };
+
+        // Sample products for all categories
+        const sampleProducts = [
+            // Pesticides
+            { name: 'Neem Pesticide 500ml', category: 'Pesticides', crop_type: 'General', new_price: 250, old_price: 350 },
+            { name: 'Pyrethroids Insecticide 1L', category: 'Pesticides', crop_type: 'Vegetable', new_price: 450, old_price: 550 },
+            { name: 'Copper Fungicide 500ml', category: 'Pesticides', crop_type: 'Tomato', new_price: 320, old_price: 420 },
+            { name: 'Mancozeb Fungicide 500g', category: 'Pesticides', crop_type: 'Crop', new_price: 280, old_price: 380 },
+            { name: 'Organophosphate Pesticide 1L', category: 'Pesticides', crop_type: 'Field', new_price: 380, old_price: 480 },
+
+            // Fertilizers
+            { name: 'NPK 10-10-10 Fertilizer 25kg', category: 'Fertilizers', crop_type: 'Vegetable', new_price: 450, old_price: 600 },
+            { name: 'Urea Fertilizer 50kg', category: 'Fertilizers', crop_type: 'General', new_price: 350, old_price: 450 },
+            { name: 'Potash Fertilizer 25kg', category: 'Fertilizers', crop_type: 'Fruit', new_price: 500, old_price: 650 },
+            { name: 'Phosphate Fertilizer 25kg', category: 'Fertilizers', crop_type: 'Crop', new_price: 420, old_price: 550 },
+            { name: 'Organic Compost 20kg', category: 'Fertilizers', crop_type: 'Vegetable', new_price: 280, old_price: 380 },
+
+            // Organic
+            { name: 'Organic Vermicompost 25kg', category: 'Organic', crop_type: 'Vegetable', new_price: 350, old_price: 450 },
+            { name: 'Bio Fertilizer Azospirillum', category: 'Organic', crop_type: 'General', new_price: 200, old_price: 300 },
+            { name: 'Cow Dung Manure 50kg', category: 'Organic', crop_type: 'Crop', new_price: 150, old_price: 250 },
+            { name: 'Seaweed Extract 1L', category: 'Organic', crop_type: 'Vegetable', new_price: 320, old_price: 420 },
+            { name: 'Neem Cake 25kg', category: 'Organic', crop_type: 'Field', new_price: 280, old_price: 380 },
+
+            // Herbicides
+            { name: '2,4-D Herbicide 1L', category: 'Herbicides', crop_type: 'Field', new_price: 380, old_price: 480 },
+            { name: 'Glyphosate Herbicide 500ml', category: 'Herbicides', crop_type: 'General', new_price: 420, old_price: 520 },
+            { name: 'Paraquat Herbicide 1L', category: 'Herbicides', crop_type: 'Crop', new_price: 450, old_price: 550 },
+            { name: 'Atrazine Herbicide 500ml', category: 'Herbicides', crop_type: 'Maize', new_price: 350, old_price: 450 },
+            { name: 'Pendimethalin Herbicide 1L', category: 'Herbicides', crop_type: 'Vegetable', new_price: 380, old_price: 480 },
+
+            // Seeds
+            { name: 'Tomato Seeds Premium', category: 'seed', crop_type: 'Tomato', new_price: 120, old_price: 180 },
+            { name: 'Onion Seeds High Yield', category: 'seed', crop_type: 'onion', new_price: 100, old_price: 150 },
+            { name: 'Carrot Seeds Organic', category: 'seed', crop_type: 'Vegetable', new_price: 80, old_price: 130 },
+            { name: 'Wheat Seeds', category: 'seed', crop_type: 'Crop', new_price: 50, old_price: 100 },
+            { name: 'Chilli Seeds', category: 'seed', crop_type: 'Vegetable', new_price: 150, old_price: 220 },
+
+            // Others
+            { name: 'Soil Testing Kit', category: 'others', crop_type: 'General', new_price: 500, old_price: 700 },
+            { name: 'Drip Irrigation Setup', category: 'others', crop_type: 'Field', new_price: 3500, old_price: 5000 },
+            { name: 'Farm Tools Kit', category: 'others', crop_type: 'General', new_price: 2500, old_price: 3500 },
+            { name: 'Pruning Shears', category: 'others', crop_type: 'General', new_price: 350, old_price: 500 },
+            { name: 'Mulch Paper', category: 'others', crop_type: 'Vegetable', new_price: 450, old_price: 600 },
+
+            // Stationary
+            { name: 'Farm Notebook A4', category: 'stationary', crop_type: 'General', new_price: 80, old_price: 120 },
+            { name: 'Agriculture Guidebook', category: 'stationary', crop_type: 'General', new_price: 250, old_price: 350 },
+            { name: 'Weather Station Record Book', category: 'stationary', crop_type: 'Field', new_price: 120, old_price: 180 },
+            { name: 'Crop Calendar Planner', category: 'stationary', crop_type: 'General', new_price: 250, old_price: 350 },
+            { name: 'Chemical Labels (per 100)', category: 'stationary', crop_type: 'Field', new_price: 100, old_price: 150 }
+        ];
+
+        let productId = (await Product.find({})).length + 1;
+        
+        for (let i = 0; i < sampleProducts.length; i++) {
+            const product = sampleProducts[i];
+            const newProduct = new Product({
+                id: productId++,
+                email: 'admin@farmconnect.com',
+                name: product.name,
+                category: product.category,
+                crop_type: product.crop_type,
+                new_price: product.new_price,
+                old_price: product.old_price,
+                image: getImageUrl(i),
+                size: 'Standard',
+                tags: product.category,
+                description: `High-quality ${product.name.toLowerCase()} for professional farmers`,
+                available: true
+            });
+            await newProduct.save();
+        }
+
+        res.json({
+            success: true,
+            message: `${sampleProducts.length} sample products added successfully`,
+            count: sampleProducts.length
+        });
+        console.log(`✅ Added ${sampleProducts.length} sample products to database`);
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // Schema creating for User model
 
 const Users = mongoose.model('user', {
@@ -231,27 +381,28 @@ const Users = mongoose.model('user', {
 
 app.post('/adduser', async (req, res) => {
     try {
-        let user = await Users.find({});
-        if (req.body.email === user.email) {
+        // Check if a user with the same email already exists
+        const existingUser = await Users.findOne({ email: req.body.email });
+        if (existingUser) {
             return res.status(400).json({
                 success: false,
                 errors: "Existing user found with same email id"
             });
-        } else {
-            const user = new Users({
-                name: req.body.name,
-                email: req.body.email,
-                password: req.body.password,
-                role: req.body.role,
-                latitude: req.body.latitude,
-                longitude: req.body.longitude
-            });
-            await user.save();
-            res.json({
-                success: true,
-                name: req.body.name,
-            });
         }
+
+        const user = new Users({
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+            role: req.body.role,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude
+        });
+        await user.save();
+        res.json({
+            success: true,
+            name: req.body.name,
+        });
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -289,76 +440,131 @@ app.post('/removeuser', async (req, res) => {
 // Creating Endpoint for signup
 
 app.post('/signup', async (req, res) => {
-    let check = await Users.findOne({
-        email: req.body.email
-    });
-    if (check) {
-        return res.status(400).json({
+    try {
+        const { email, password, username, role, latitude, longitude } = req.body;
+
+        // Validation
+        if (!email || !password || !username || !role) {
+            return res.status(400).json({
+                success: false,
+                errors: "All fields are required"
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                errors: "Password must be at least 6 characters long"
+            });
+        }
+
+        let check = await Users.findOne({ email });
+        if (check) {
+            return res.status(400).json({
+                success: false,
+                errors: "User already exists with this email"
+            });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        let cart = {};
+        for (let i = 0; i < 300; i++) {
+            cart[i] = 0;
+        }
+
+        const user = new Users({
+            name: username,
+            email,
+            role,
+            password: hashedPassword,
+            latitude: latitude || 0,
+            longitude: longitude || 0,
+            cartdata: cart,
+        });
+
+        await user.save();
+
+        const data = {
+            user: {
+                id: user._id
+            }
+        };
+
+        const token = jwt.sign(data, JWT_SECRET, { expiresIn: '7d' });
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({
             success: false,
-            errors: "Existing user found with same email id"
+            errors: error.message
         });
     }
-
-    let cart = {};
-    for (let i = 0; i < 300; i++) {
-        cart[i] = 0;
-    }
-
-    const user = new Users({
-        name: req.body.username,
-        email: req.body.email,
-        role: req.body.role,
-        password: req.body.password,
-        latitude: req.body.latitude,
-        longitude: req.body.longitude,
-        cartdata: cart,
-    });
-
-    await user.save();
-
-    const data = {
-        user: {
-            id: user.id
-        }
-    };
-
-    const token = jwt.sign(data, 'secret_ecom');
-    res.json({
-        success: true,
-        token
-    });
 });
 
 // creating endpoint for user login
 
 app.post('/login', async (req, res) => {
-    let user = await Users.findOne({
-        email: req.body.email
-    });
-    if (user) {
-        const passcompare = req.body.password === user.password;
-        if (passcompare) {
-            const data = {
-                user: {
-                    id: user.id
-                }
-            };
+    try {
+        const { email, password } = req.body;
 
-            const token = jwt.sign(data, 'secret_ecom');
-            res.json({
-                success: true,
-                token
-            });
-        } else {
-            res.json({
+        // Validation
+        if (!email || !password) {
+            return res.status(400).json({
                 success: false,
-                errors: "Wrong password"
+                errors: "Email and password are required"
             });
         }
-    } else {
+
+        let user = await Users.findOne({ email });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                errors: "User not found"
+            });
+        }
+
+        // Compare passwords
+        const passcompare = await bcrypt.compare(password, user.password);
+        if (!passcompare) {
+            return res.status(400).json({
+                success: false,
+                errors: "Invalid password"
+            });
+        }
+
+        const data = {
+            user: {
+                id: user._id
+            }
+        };
+
+        const token = jwt.sign(data, JWT_SECRET, { expiresIn: '7d' });
         res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
             success: false,
-            errors: "Wrong email id"
+            errors: error.message
         });
     }
 });
@@ -393,12 +599,12 @@ const fetchuser = (req, res, next) => {
         });
     }
     try {
-        const data = jwt.verify(token, 'secret_ecom');
+        const data = jwt.verify(token, JWT_SECRET);
         req.user = data.user;
         next();
     } catch (error) {
         res.status(401).send({
-            errors: "Please authenticate using valid token"
+            errors: "Invalid or expired token"
         });
     }
 };
@@ -497,6 +703,11 @@ const Orders = mongoose.model('Orders', {
         require: true
     },
 
+    transactionId: {
+        type: String,
+        default: null,
+    },
+
     address: {
         type: String,
         require: true,
@@ -537,6 +748,7 @@ app.post(('/addorder'), async (req, res) => {
             email: req.body.email,
             contact: req.body.contact,
             payment: req.body.payment,
+            transactionId: req.body.transactionId || null,
             address: req.body.address,
             cartdata: req.body.cartdata,
             status: req.body.status
@@ -549,10 +761,10 @@ app.post(('/addorder'), async (req, res) => {
         });
 
     } catch (error) {
-        res.send(500).json({
+        res.status(500).json({
             success: false,
             error: error.message
-        })
+        });
     }
 })
 

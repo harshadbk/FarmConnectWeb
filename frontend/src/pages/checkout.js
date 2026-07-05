@@ -1,12 +1,25 @@
 // CheckoutPage.js
-import React, { useContext, useState } from "react";
-import "./checkout.css";
-import { shopContext } from "../context/shopcontext";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from 'react';
+import './checkout.css';
+import { shopContext } from '../context/shopcontext';
+import { useNavigate } from 'react-router-dom';
 
 const CheckoutPage = () => {
-  const { allProduct, cartItem } = useContext(shopContext);
+  const { allProduct, cartItem, clearCart } = useContext(shopContext);
+  const navigate = useNavigate();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
+  const [orderDetails, setOrderDetails] = useState({
+    user: localStorage.getItem('user-name') || '',
+    name: '',
+    lname: '',
+    email: localStorage.getItem('user-email') || '',
+    contact: '',
+    payment: '',
+    address: '',
+    status: false,
+  });
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const getCartData = () => {
     return allProduct
@@ -17,60 +30,20 @@ const CheckoutPage = () => {
       .map((product) => ({
         id: product.id,
         name: product.name,
-        email: product.email,
         quantity: cartItem[product.id],
         price: product.new_price,
         image: product.image,
       }));
   };
 
-  const [orderDetails, setOrderDetails] = useState({
-    user: localStorage.getItem("user-name"),
-    name: "",
-    lname: "",
-    email: "",
-    contact: "",
-    payment: "",
-    address: "",
-    cartdata: getCartData(),
-    status: false,
-  });
+  const cartItems = getCartData();
+
+  const calculateSubtotal = () => {
+    return cartItems.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  };
 
   const changeHandler = (e) => {
     setOrderDetails({ ...orderDetails, [e.target.name]: e.target.value });
-  };
-
-  const addOrder = async () => {
-    const order = { ...orderDetails, cartdata: getCartData() };
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/addorder", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(order),
-      });
-
-      const data = await response.json();
-      data.success ? alert("Order Added") : alert("Failed to add order");
-    } catch (error) {
-      console.error("Order upload failed:", error);
-    }
-  };
-
-  const calculateSubtotal = () => {
-    let subtotal = 0;
-    if (Array.isArray(allProduct) && cartItem) {
-      allProduct.forEach((product) => {
-        const quantity = cartItem[product.id] || 0;
-        if (quantity > 0) {
-          subtotal += quantity * product.new_price;
-        }
-      });
-    }
-    return subtotal;
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -78,181 +51,139 @@ const CheckoutPage = () => {
     setOrderDetails({ ...orderDetails, payment: method.name });
   };
 
-  const handlePayment = () => {
-    if (selectedPaymentMethod) {
-      alert(`Proceeding with ${selectedPaymentMethod.name}`);
-      return true;
-    } else {
-      alert("Please select a payment method and Save The Data");
-      return false;
+  const handlePlaceOrder = async () => {
+    if (!orderDetails.name.trim() || !orderDetails.lname.trim() || !orderDetails.email.trim() || !orderDetails.contact.trim() || !orderDetails.address.trim()) {
+      setError('Please complete all customer details before placing the order.');
+      return;
+    }
+
+    if (!selectedPaymentMethod) {
+      setError('Please choose a payment method.');
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      setError('Your cart is empty. Add products before checkout.');
+      return;
+    }
+
+    setError('');
+    setSaving(true);
+
+    try {
+      navigate('/payment', {
+        state: {
+          orderDetails,
+          cartItems,
+          selectedPaymentMethod,
+          amount: calculateSubtotal().toFixed(2),
+        },
+      });
+    } catch (err) {
+      setError(err.message || 'Failed to continue to payment. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
+  const paymentMethods = [
+    { id: 'credit-card', name: 'Credit/Debit Card' },
+    { id: 'upi', name: 'UPI Payments' },
+    { id: 'bank-transfer', name: 'Bank Transfer' },
+    { id: 'cash-on-delivery', name: 'Cash on Delivery' },
+  ];
+
   return (
-    <div className="checkout">
-      <div className="checkout-header-left">
-        <h1>Customer Information</h1>
+    <div className='checkout'>
+      <div className='checkout-header-left'>
+        <h1>Checkout</h1>
+        <p>Complete your order and choose a payment method.</p>
       </div>
-      <div className="checkout-details-left">
+
+      {error && <div className='checkout-error'>{error}</div>}
+
+      <div className='checkout-details-left'>
         <form>
           <div>
-            <p>Enter First Name</p>
-            <input
-              type="text"
-              name="name"
-              value={orderDetails.name}
-              onChange={changeHandler}
-              required
-            />
+            <p>First Name</p>
+            <input type='text' name='name' value={orderDetails.name} onChange={changeHandler} required />
           </div>
           <div>
-            <p>Enter Last Name</p>
-            <input
-              type="text"
-              name="lname"
-              value={orderDetails.lname}
-              onChange={changeHandler}
-              required
-            />
+            <p>Last Name</p>
+            <input type='text' name='lname' value={orderDetails.lname} onChange={changeHandler} required />
           </div>
           <div>
-            <p>Enter Email</p>
-            <input
-              type="email"
-              name="email"
-              value={orderDetails.email}
-              onChange={changeHandler}
-              required
-            />
+            <p>Email</p>
+            <input type='email' name='email' value={orderDetails.email} onChange={changeHandler} required />
           </div>
           <div>
-            <p>Enter Contact No</p>
-            <input
-              type="text"
-              name="contact"
-              value={orderDetails.contact}
-              onChange={changeHandler}
-              required
-            />
+            <p>Contact No</p>
+            <input type='text' name='contact' value={orderDetails.contact} onChange={changeHandler} required />
           </div>
           <div>
-            <p>Enter Permanent Address</p>
-            <input
-              type="text"
-              name="address"
-              value={orderDetails.address}
-              onChange={changeHandler}
-              required
-            />
+            <p>Address</p>
+            <input type='text' name='address' value={orderDetails.address} onChange={changeHandler} required />
           </div>
         </form>
       </div>
-      <div className="checkout-paymentInfo-left">
+
+      <div className='checkout-paymentInfo-left'>
         <h1>Payment Information</h1>
-        <br />
-        <div className="checkout-data-left">
+        <div className='checkout-data-left'>
           <form>
-            <div className="checkout-paymentoption-left">
-              <input
-                type="radio"
-                id="credit-card"
-                name="payment-method"
-                onChange={() =>
-                  handlePaymentMethodChange({
-                    id: "credit-card",
-                    name: "Credit/Debit Card",
-                  })
-                }
-                required
-              />
-              <label htmlFor="credit-card">Credit/Debit Card</label>
-              <br />
-              <input
-                type="radio"
-                id="paypal"
-                name="payment-method"
-                onChange={() =>
-                  handlePaymentMethodChange({ id: "paypal", name: "UPI Payments" })
-                }
-                required
-              />
-              <label htmlFor="paypal">UPI Payments</label>
-              <br />
-              <input
-                type="radio"
-                id="bank-transfer"
-                name="payment-method"
-                onChange={() =>
-                  handlePaymentMethodChange({
-                    id: "bank-transfer",
-                    name: "Bank Transfer",
-                  })
-                }
-                required
-              />
-              <label htmlFor="bank-transfer">Bank Transfer</label>
-              <br />
-              <input
-                type="radio"
-                id="cash-on-delivery"
-                name="payment-method"
-                onChange={() =>
-                  handlePaymentMethodChange({
-                    id: "cash-on-delivery",
-                    name: "Cash on Delivery",
-                  })
-                }
-                required
-              />
-              <label htmlFor="cash-on-delivery">Cash on Delivery</label>
-              <br />
+            <div className='checkout-paymentoption-left'>
+              {paymentMethods.map((method) => (
+                <label key={method.id} className='payment-option'>
+                  <input
+                    type='radio'
+                    name='payment-method'
+                    value={method.id}
+                    checked={selectedPaymentMethod?.id === method.id}
+                    onChange={() => handlePaymentMethodChange(method)}
+                  />
+                  {method.name}
+                </label>
+              ))}
             </div>
           </form>
         </div>
       </div>
-      <div className="checkout-amount-down">
+
+      <div className='checkout-amount-down'>
         <h1>Order Summary</h1>
-        <div className="checkout-format-down">
-          <p>Products</p>
+        <div className='checkout-format-down'>
+          <p>Product</p>
           <p>Title</p>
           <p>Quantity</p>
           <p>Total</p>
         </div>
-        {Array.isArray(allProduct) &&
-          allProduct.map((product) => {
-            const quantity = cartItem[product.id] || 0;
-            if (quantity > 0) {
-              return (
-                <div key={product.id} className="cartitems-format-down">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="carticon-product-icon"
-                  />
-                  <p>{product.name}</p>
-                  <button className="cartitems-quantity-down">{quantity}</button>
-                  <p>${(quantity * product.new_price).toFixed(2)}</p>
-                </div>
-              );
-            }
-            return null;
-          })}
-      </div>
-      <br />
-      <div className="checkout-downside">
-        {selectedPaymentMethod ? (
-          <Link
-            to={{ pathname: "/payment", state: { subtotal: calculateSubtotal().toFixed(2) } }}
-          >
-            <button type="button" className="submit-button" onClick={addOrder}>
-              Save And Pay ${calculateSubtotal().toFixed(2)}
-            </button>
-          </Link>
+        {cartItems.length === 0 ? (
+          <p>Your cart is empty.</p>
         ) : (
-          <button type="button" className="submit-button" onClick={handlePayment}>
-            Save And Pay ${calculateSubtotal().toFixed(2)}
-          </button>
+          cartItems.map((product) => (
+            <div key={product.id} className='cartitems-format-down'>
+              <img src={product.image} alt={product.name} className='carticon-product-icon' />
+              <p>{product.name}</p>
+              <button className='cartitems-quantity-down'>{product.quantity}</button>
+              <p>₹{(product.quantity * product.price).toFixed(2)}</p>
+            </div>
+          ))
         )}
+        <div className='checkout-summary-row'>
+          <p>Subtotal</p>
+          <p>₹{calculateSubtotal().toFixed(2)}</p>
+        </div>
+      </div>
+
+      <div className='checkout-downside'>
+        <button
+          type='button'
+          className='submit-button'
+          onClick={handlePlaceOrder}
+          disabled={saving || cartItems.length === 0}
+        >
+          {saving ? 'Processing...' : `Continue to Payment ₹${calculateSubtotal().toFixed(2)}`}
+        </button>
       </div>
     </div>
   );

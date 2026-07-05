@@ -1,187 +1,176 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import './navbar.css';
 import logo from '../Assets/logo.jpg';
 import cartIcon from '../Assets/cart_icon.jpg';
 import { Link } from 'react-router-dom';
 import { shopContext } from '../../context/shopcontext';
+import { AuthContext } from '../../context/AuthContext';
 import Profile from '../Assets/profile.jpeg';
 
 const Navbar = () => {
-  const [menu, setMenu] = useState("Shop");
+  const [menu, setMenu] = useState('Shop');
   const [showCategories, setShowCategories] = useState(false);
-  const [showCustomerCategory, setShowCustomerCategory] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { getTotalCartItem } = useContext(shopContext);
+  const { user } = useContext(AuthContext);
+
+  const isAuthenticated = !!localStorage.getItem('auth-token');
+  const userName = localStorage.getItem('user-name');
+  const userEmail = localStorage.getItem('user-email');
+  const role = localStorage.getItem('role');
+  const normalizedRole = role?.trim() || '';
+
+  const roleLinks = {
+    Farmer: [
+      { name: 'Add Product', path: '/faddproduct' },
+      { name: 'Add Work', path: '/addwork' },
+      { name: 'Remote Merchants', path: '/rmerchants' },
+      { name: 'Remote Shopkeepers', path: '/rshopkeeper' },
+      { name: 'Remote Workers', path: '/rworkers' },
+      { name: 'Community', path: '/FCommunity' },
+      { name: 'AI Assistant', path: '/ai' },
+      { name: 'Add Feedback', path: '/feedback' },
+      { name: 'Pending Work', path: '/pendingo' },
+      { name: 'Completed Work', path: '/completeo' },
+      { name: 'My Earnings', path: '/earning' },
+      { name: 'Investments', path: '/myinvest' },
+    ],
+    Shopkeeper: [
+      { name: 'Add Product', path: '/addproduct' },
+      { name: 'List Products', path: '/shopkeeper' },
+      { name: 'Pending Orders', path: '/pending' },
+      { name: 'Complete Orders', path: '/complete' },
+      { name: 'Remote Farmers', path: '/rfarmers' },
+      { name: 'Community', path: '/FCommunity' },
+    ],
+    Merchant: [
+      { name: 'Buy Product', path: '/' },
+      { name: 'Farmers Near Me', path: '/rfarmers' },
+      { name: 'Community', path: '/FCommunity' },
+    ],
+  }[normalizedRole] || [];
 
   const handleCategoriesClick = () => {
-    setMenu("Categories");
+    setMenu('Categories');
     setShowCategories((prev) => !prev);
   };
 
-  const handleCustomerClick = () => {
-    setMenu("Customer");
-    setShowCustomerCategory((prev) => !prev);
-  };
-
-  const isAuthenticated = localStorage.getItem('auth-token');
-
-  useEffect(() => {
-    const loadGoogleTranslate = () => {
-      window.googleTranslateElementInit = () => {
-        try {
-          new window.google.translate.TranslateElement(
-            { pageLanguage: 'en', includedLanguages: 'en,mr,hn' },
-            'google_translate_element'
-          );
-        } catch (error) {
-          console.error("Google Translate initialization failed: ", error);
-        }
-      };
-
-      // Load the Google Translate script dynamically
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.onerror = () => {
-        console.error("Failed to load the Google Translate script.");
-      };
-      document.body.appendChild(script);
-
-      return () => {
-        if (script) {
-          document.body.removeChild(script);
-        }
-      };
-    };
-
-    // loadGoogleTranslate();
-  }, []);
-
-  const handleTranslateClick = (languageCode) => {
-    const translateElement = document.querySelector('.goog-te-combo');
-    if (translateElement) {
-      translateElement.value = languageCode; // Set the language code
-      translateElement.dispatchEvent(new Event('change')); // Trigger change event
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('auth-token');
+    localStorage.removeItem('user-name');
+    localStorage.removeItem('user-email');
+    localStorage.removeItem('role');
+    localStorage.removeItem('address');
+    setShowProfileMenu(false);
+    window.location.replace('/');
   };
 
   return (
-    <div className='navbar'>
-      <div className="nav-logo">
-        <img src={logo} alt="Logo" />
+    <header className='navbar'>
+      <div className='nav-logo'>
+        <img src={logo} alt='Logo' />
         <p>VISHWA_AGRO</p>
       </div>
-      <ul className="nav-menu">
-        <li onClick={() => setMenu("Shop")}>
-          <Link style={{ textDecoration: 'none' }} to='/'>Shop</Link>
-          {menu === "Shop" && <hr />}
+
+      <ul className='nav-menu'>
+        <li onClick={() => setMenu('Shop')}>
+          <Link to='/'>Shop</Link>
+          {menu === 'Shop' && <hr />}
         </li>
         <li onClick={handleCategoriesClick}>
-          <span style={{ textDecoration: 'none', cursor: 'pointer' }}>Products</span>
-          {menu === "Categories" && <hr />}
+          <span className='nav-link-button'>Products</span>
+          {menu === 'Categories' && <hr />}
           {showCategories && (
-            <ul className="dropdown">
-              {/* Submenu Items */}
-              <li onClick={() => setMenu("Fertilizers")}>
-                <Link style={{ textDecoration: 'none' }} to='/Fertilizers'>Fertilizers</Link>
-                {menu === "Fertilizers" && <hr />}
+            <ul className='dropdown'>
+              <li onClick={() => setMenu('Fertilizers')}>
+                <Link to='/Fertilizers'>Fertilizers</Link>
               </li>
-              <li onClick={() => setMenu("Pesticides")}>
-                <Link style={{ textDecoration: 'none' }} to='/Pesticides'>Pesticides</Link>
-                {menu === "Pesticides" && <hr />}
+              <li onClick={() => setMenu('Pesticides')}>
+                <Link to='/Pesticides'>Pesticides</Link>
               </li>
-              <li onClick={() => setMenu("Organic")}>
-                <Link style={{ textDecoration: 'none' }} to='/Organic'>Organic</Link>
-                {menu === "Organic" && <hr />}
+              <li onClick={() => setMenu('Organic')}>
+                <Link to='/Organic'>Organic</Link>
               </li>
-              <li onClick={() => setMenu("Herbicides")}>
-                <Link style={{ textDecoration: 'none' }} to='/Herbicides'>Herbicides</Link>
-                {menu === "Herbicides" && <hr />}
+              <li onClick={() => setMenu('Herbicides')}>
+                <Link to='/Herbicides'>Herbicides</Link>
               </li>
-              <li onClick={() => setMenu("seed")}>
-                <Link style={{ textDecoration: 'none' }} to='/seed'>Seeds</Link>
-                {menu === "seed" && <hr />}
+              <li onClick={() => setMenu('Seeds')}>
+                <Link to='/seed'>Seeds</Link>
               </li>
-              <li onClick={() => setMenu("others")}>
-                <Link style={{ textDecoration: 'none' }} to='/others'>Others</Link>
-                {menu === "others" && <hr />}
+              <li onClick={() => setMenu('Others')}>
+                <Link to='/others'>Others</Link>
               </li>
             </ul>
           )}
         </li>
-        {/* Additional Menu Items */}
-        <li onClick={() => setMenu("stationary")}>
-          <Link style={{ textDecoration: 'none' }} to='/stationary'>Stationary</Link>
-          {menu === "stationary" && <hr />}
+        <li onClick={() => setMenu('Offers')}>
+          <Link to='/Offers'>Offers</Link>
+          {menu === 'Offers' && <hr />}
         </li>
-        <li onClick={() => setMenu("Bestseller")}>
-          <Link style={{ textDecoration: 'none' }} to='/Bestseller'>Best Seller</Link>
-          {menu === "Bestseller" && <hr />}
+        <li onClick={() => setMenu('Community')}>
+          <Link to='/FCommunity'>Community</Link>
+          {menu === 'Community' && <hr />}
         </li>
-        <li onClick={() => setMenu("Offers")}>
-          <Link style={{ textDecoration: 'none' }} to='/Offers'>Offers</Link>
-          {menu === "Offers" && <hr />}
+        <li onClick={() => setMenu('AI')}>
+          <Link to='/ai'>AI Assistant</Link>
+          {menu === 'AI' && <hr />}
         </li>
-        <li onClick={() => setMenu("About")}>
-          <Link style={{ textDecoration: 'none' }} to='/About'>About/Contact Us</Link>
-          {menu === "About" && <hr />}
-        </li>
-        <li onClick={handleCustomerClick}>
-          <span style={{ textDecoration: 'none', cursor: 'pointer' }}>Customer Services</span>
-          {menu === "Customer" && <hr />}
-          {showCustomerCategory && (
-            <ul className="dropdown">
-              {/* Submenu Items */}
-              <li onClick={() => setMenu("Shipping")}>
-                <Link style={{ textDecoration: 'none' }} to='/Shipping'>Shipping & Delivery</Link>
-                {menu === "Shipping" && <hr />}
-              </li>
-              <li onClick={() => setMenu("Returns")}>
-                <Link style={{ textDecoration: 'none' }} to='/Returns'>Returns & Refunds</Link>
-                {menu === "Returns" && <hr />}
-              </li>
-              <li onClick={() => setMenu("Privacy")}>
-                <Link style={{ textDecoration: 'none' }} to='/Privacy'>Privacy Policy</Link>
-                {menu === "Privacy" && <hr />}
-              </li>
-              <li onClick={() => setMenu("Terms")}>
-                <Link style={{ textDecoration: 'none' }} to='/Terms'>Terms of Service</Link>
-                {menu === "Terms" && <hr />}
-              </li>
-            </ul>
-          )}
+        <li onClick={() => setMenu('About')}>
+          <Link to='/About'>Contact</Link>
+          {menu === 'About' && <hr />}
         </li>
       </ul>
 
-      {/* Google Translate */}
-      <div id="google_translate_element"></div>
-
-      <div className="nav-login-cart">
-        {isAuthenticated ? (
-          <button className="nav-button" onClick={() => {
-            localStorage.removeItem('auth-token');
-            localStorage.removeItem('user-name');
-            localStorage.removeItem('role');
-            localStorage.removeItem('address');
-            window.location.replace('/');
-          }}>Logout</button>
-        ) : (
-          <Link to='/loginsignup'><button className="nav-button">Login</button></Link>
-        )}
-
+      <div className='nav-login-cart'>
         <Link to='/cart'>
-          <img src={cartIcon} alt="Cart" className="nav-cart-icon" />
+          <div className='cart-icon-container'>
+            <img src={cartIcon} alt='Cart' className='nav-cart-icon' />
+            {getTotalCartItem() > 0 && <div className='nav-cart-count'>{getTotalCartItem()}</div>}
+          </div>
         </Link>
-        <div className="nav-cart-count">{getTotalCartItem()}</div>
 
         {isAuthenticated ? (
-          <Link to='/profile'>
-            <img src={Profile} alt="Profile" className='profile-img' />
-          </Link>
+          <div className='profile-menu-container'>
+            <div className='profile-menu-trigger' onClick={() => setShowProfileMenu(!showProfileMenu)}>
+              <img src={Profile} alt='Profile' className='profile-img' />
+              <span className='profile-name-short'>{userName ? userName.charAt(0).toUpperCase() : 'U'}</span>
+            </div>
+            {showProfileMenu && (
+              <div className='profile-dropdown-menu'>
+                <div className='profile-dropdown-header'>
+                  <img src={Profile} alt='Profile' />
+                  <div>
+                    <p className='dropdown-name'>{userName || 'User'}</p>
+                    <p className='dropdown-email'>{userEmail || 'user@example.com'}</p>
+                  </div>
+                </div>
+                <hr />
+                <Link to='/profile' onClick={() => setShowProfileMenu(false)}>
+                  <div className='dropdown-item'>👤 My Profile</div>
+                </Link>
+                <div className='dropdown-item' onClick={handleLogout}>
+                  🚪 Logout
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
-          <img onClick={() => { alert("Please Login or Sign up To The System") }} src={Profile} alt="Profile" className='profile-img disabled' />
+          <Link to='/loginsignup'>
+            <button className='nav-button nav-login-btn'>Login / Sign Up</button>
+          </Link>
         )}
       </div>
-    </div>
+
+      {isAuthenticated && roleLinks.length > 0 && (
+        <div className='secondary-nav'>
+          {roleLinks.map((link) => (
+            <Link key={link.path} to={link.path} className='secondary-nav-link'>
+              {link.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </header>
   );
 };
 

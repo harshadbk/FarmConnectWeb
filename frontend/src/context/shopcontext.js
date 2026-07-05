@@ -22,7 +22,30 @@ const ShopContextProvider = (props) => {
         }
         return resp.json();
       })
-      .then((data) => setAllProduct(data))
+      .then((data) => {
+        // Normalize product objects to match frontend expectations.
+        // Ensure each product has a numeric `id`, a full `image` URL, and numeric prices.
+        const normalized = (Array.isArray(data) ? data : []).map((p, idx) => {
+          const id = p.id !== undefined && p.id !== null ? Number(p.id) : idx + 1;
+          const image = p.image
+            ? String(p.image).startsWith('http')
+              ? p.image
+              : `http://127.0.0.1:5000/${String(p.image).replace(/^\/+/, '')}`
+            : '';
+          const new_price = p.new_price !== undefined ? Number(p.new_price) : p.newPrice !== undefined ? Number(p.newPrice) : null;
+          const old_price = p.old_price !== undefined ? Number(p.old_price) : p.oldPrice !== undefined ? Number(p.oldPrice) : null;
+
+          return {
+            ...p,
+            id,
+            image,
+            new_price,
+            old_price,
+          };
+        });
+
+        setAllProduct(normalized);
+      })
       .catch((error) => {
         console.error('Fetch error:', error);
       });
@@ -122,6 +145,10 @@ const ShopContextProvider = (props) => {
   };
   
 
+  const clearCart = () => {
+    setCartItem(getDefaultCart());
+  };
+
   const getTotalCartItem = () => {
     let totalItem = 0;
     for (const item in cartItem) {
@@ -138,6 +165,7 @@ const ShopContextProvider = (props) => {
     cartItem,
     addToCart,
     removeFromCart,
+    clearCart,
   };
 
   return (

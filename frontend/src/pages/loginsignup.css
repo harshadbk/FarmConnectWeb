@@ -3,101 +3,372 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Full viewport height */
-    background-color: pink; /* Light background color */
-    padding: 20px; /* Padding for spacing */
-}
-
-.loginsignup-fields input,
-.add-product-selector {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  width: 100%;
-  box-sizing: border-box;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Container for the login/signup form */
 .loginsignup-container {
-    background-color: #fff; /* White background for contrast */
-    padding: 40px; /* Padding for spacing */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    max-width: 400px; /* Max width for container */
-    width: 100%; /* Full width */
-    text-align: center; /* Center align text */
+    background-color: #ffffff;
+    padding: 50px 40px;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 450px;
+    width: 100%;
+    animation: slideUp 0.5s ease-out;
 }
 
-/* Title styling */
-.loginsignup-container h1 {
-    margin-bottom: 20px; /* Margin for spacing */
-    color: #333; /* Dark text color */
-    font-size: 24px; /* Font size */
-    font-weight: 600; /* Font weight */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Fields container */
+/* Header styling */
+.loginsignup-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.loginsignup-header h1 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.loginsignup-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-error {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-success {
+    background-color: #efe;
+    color: #3c3;
+    border: 1px solid #cfc;
+}
+
+.alert-icon {
+    font-size: 16px;
+}
+
+/* Form Fields Container */
 .loginsignup-fields {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Gap between fields */
-    margin-bottom: 20px; /* Margin for spacing */
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Input field styling */
-.loginsignup-fields input {
-    padding: 10px; /* Padding for spacing */
-    font-size: 16px; /* Font size */
-    border: 1px solid #ccc; /* Border for input field */
-    border-radius: 5px; /* Rounded corners */
-    box-sizing: border-box; /* Ensure padding and border are included in total width */
+.form-input,
+.form-select {
+    padding: 14px 16px;
+    font-size: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background-color: #f9f9f9;
+}
+
+.form-input:focus,
+.form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.form-input::placeholder {
+    color: #999;
 }
 
 /* Button styling */
-.loginsignup-container button {
-    padding: 10px 20px; /* Padding for spacing */
-    font-size: 16px; /* Font size */
-    font-weight: 600; /* Font weight */
-    color: #fff; /* White text */
-    background-color: #007bff; /* Primary color for button */
-    border: none; /* Remove default border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: background-color 0.3s; /* Smooth transition for hover effect */
+.loginsignup-btn {
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
 }
 
-.loginsignup-container button:hover {
-    background-color: #0056b3; /* Darker shade on hover */
+.loginsignup-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
 }
 
-/* Login link styling */
-.loginsignup-login {
-    margin-top: 20px; /* Margin for spacing */
-    color: #333; /* Dark text color */
-    font-size: 14px; /* Font size */
+.loginsignup-btn:active:not(:disabled) {
+    transform: translateY(0);
 }
 
-.loginsignup-login span {
-    color: #007bff; /* Primary color for link */
-    cursor: pointer; /* Pointer cursor on hover */
-    transition: color 0.3s; /* Smooth transition for hover effect */
+.loginsignup-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
-.loginsignup-login span:hover {
-    color: #0056b3; /* Darker shade on hover */
+/* Loading spinner */
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Toggle section */
+.loginsignup-toggle {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.loginsignup-toggle p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.toggle-link {
+    color: #667eea;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    text-decoration: none;
+}
+
+.toggle-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
 }
 
 /* Agree container */
 .loginsignup-agree {
     display: flex;
-    align-items: center;
-    margin-top: 20px; /* Margin for spacing */
+    align-items: flex-start;
+    gap: 10px;
 }
 
 .loginsignup-agree input[type="checkbox"] {
-    margin-right: 10px; /* Margin between checkbox and text */
+    margin-top: 4px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #667eea;
 }
+
+.loginsignup-agree label {
+    margin: 0;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.loginsignup-agree a {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.loginsignup-agree a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loginsignup {
+        padding: 15px;
+        min-height: auto;
+    }
+
+    .loginsignup-container {
+        padding: 40px 25px;
+        max-width: 100%;
+        border-radius: 12px;
+    }
+
+    .loginsignup-header h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .loginsignup-header p {
+        font-size: 13px;
+    }
+
+    .loginsignup-fields {
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-input,
+    .form-select {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    .form-group label {
+        font-size: 12px;
+    }
+
+    .loginsignup-btn {
+        padding: 12px 18px;
+        font-size: 15px;
+        margin-bottom: 15px;
+    }
+
+    .loginsignup-toggle {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+
+    .loginsignup-toggle p {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .loginsignup {
+        padding: 10px;
+    }
+
+    .loginsignup-container {
+        padding: 30px 20px;
+        border-radius: 10px;
+    }
+
+    .loginsignup-header h1 {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+
+    .loginsignup-header p {
+        font-size: 12px;
+    }
+
+    .loginsignup-fields {
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .form-input,
+    .form-select {
+        padding: 11px 12px;
+        font-size: 13px;
+        border-radius: 6px;
+    }
+
+    .form-group label {
+        font-size: 11px;
+    }
+
+    .alert {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .loginsignup-btn {
+        padding: 11px 16px;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+    .loginsignup-agree {
+        gap: 8px;
+    }
+
+    .loginsignup-agree input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+
+    .loginsignup-agree label {
+        font-size: 12px;
+    }
+}
+
 
 .loginsignup-agree p {
     margin: 0; /* Remove default margin */

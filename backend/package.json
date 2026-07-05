@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/text-to-speech": "^5.4.0",
     "axios": "^1.7.7",
-    "backend": "file:",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.21.0",
@@ -18,10 +19,11 @@
     "mongoose": "^8.7.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "nodemon": "^3.1.7",
-    "socket.io": "^4.8.0",
-    "socket.io-client": "^4.8.0"
+    "socket.io": "^4.8.0"
   },
   "keywords": [],
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }
