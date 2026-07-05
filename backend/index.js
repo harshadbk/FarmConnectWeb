@@ -1,10 +1,13 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const port = process.env.PORT || 5000;
 const express = require("express");
 const app = express();
+const http = require("http");
+const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
+const axios = require("axios");
 const path = require("path");
 const cors = require("cors");
 const fs = require("fs");
@@ -17,9 +20,116 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret_ecom_farmconnect_2024';
 const paymentRoutes = require('./routes/payment.routes');
 const errorHandler = require('./middleware/errorHandler');
 
+const onlineUsers = new Map();
+const groupMessages = [];
+const privateMessages = new Map();
+
+const getDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
+
 app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*"
+    }
+});
+
+const messageSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    message: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now }
+});
+
+const Message = mongoose.model("Message", messageSchema);
+const chatUsers = {};
+
+io.on("connection", (socket) => {
+    socket.on("register-user", (user) => {
+        const normalized = {
+            id: socket.id,
+            email: user.email,
+            name: user.name || user.email,
+            role: user.role || 'User',
+            latitude: user.latitude || null,
+            longitude: user.longitude || null,
+        };
+        onlineUsers.set(normalized.email, normalized);
+        socket.join("farm-group");
+        socket.emit("group-history", groupMessages.slice(-50));
+        socket.broadcast.emit("user-online", normalized);
+    });
+
+    socket.on("send-group-message", (payload) => {
+        const sender = onlineUsers.get(payload.email) || {
+            name: payload.name || 'Unknown',
+            role: payload.role || 'User',
+            email: payload.email,
+        };
+        const message = {
+            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            sender: sender.name,
+            email: sender.email,
+            role: sender.role,
+            text: payload.text,
+            timestamp: new Date().toISOString(),
+        };
+        groupMessages.push(message);
+        if (groupMessages.length > 100) groupMessages.shift();
+        io.to("farm-group").emit("group-message", message);
+    });
+
+    socket.on("send-private-message", ({ toEmail, fromEmail, text, name, role }) => {
+        const sender = onlineUsers.get(fromEmail) || { name, role, email: fromEmail };
+        const message = {
+            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            fromEmail,
+            toEmail,
+            sender: sender.name,
+            role: sender.role,
+            text,
+            timestamp: new Date().toISOString(),
+        };
+
+        const key = [fromEmail, toEmail].sort().join("::");
+        if (!privateMessages.has(key)) privateMessages.set(key, []);
+        privateMessages.get(key).push(message);
+        if (privateMessages.get(key).length > 100) privateMessages.get(key).shift();
+
+        const recipient = onlineUsers.get(toEmail);
+        if (recipient) {
+            io.to(recipient.id).emit("private-message", message);
+        }
+        socket.emit("private-message-sent", message);
+    });
+
+    socket.on("request-private-history", ({ fromEmail, toEmail }) => {
+        const key = [fromEmail, toEmail].sort().join("::");
+        const history = privateMessages.get(key) || [];
+        socket.emit("private-history", history.slice(-50));
+    });
+
+    socket.on("disconnect", () => {
+        const user = Array.from(onlineUsers.entries()).find(([, value]) => value.id === socket.id);
+        if (user) {
+            onlineUsers.delete(user[0]);
+            io.emit("user-offline", { email: user[0] });
+            console.log(`${user[0]} has left the chat.`);
+        }
+    });
+});
 
 const MONGO_URI = process.env.MONGO_URI || "mongodb://HARSHAD:HARSHAD@ac-2ayfpqy-shard-00-00.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-01.yzv2blz.mongodb.net:27017,ac-2ayfpqy-shard-00-02.yzv2blz.mongodb.net:27017/e-commerce?ssl=true&replicaSet=atlas-147c89-shard-0&authSource=admin&appName=Cluster0";
 
@@ -137,6 +247,273 @@ app.post("/upload", (req, res) => {
             image_url: `http://localhost:${port}/images/${req.file.filename}`,
         });
     });
+});
+
+// Nearby users endpoint for community chat
+app.get('/api/chat/nearby-users', async (req, res) => {
+    try {
+        const currentEmail = req.query.email;
+        const latitude = Number(req.query.lat);
+        const longitude = Number(req.query.lon);
+
+        if (!currentEmail || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+            return res.status(400).json({ success: false, error: 'email, lat and lon are required' });
+        }
+
+        const users = await Users.find({
+            email: { $ne: currentEmail },
+            latitude: { $exists: true },
+            longitude: { $exists: true },
+        }).lean();
+
+        const nearby = users
+            .map((user) => {
+                const distance = getDistance(latitude, longitude, user.latitude, user.longitude);
+                return { ...user, distance: Number(distance.toFixed(1)) };
+            })
+            .filter((user) => user.distance <= 20)
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, 50);
+
+        res.json({ success: true, users: nearby });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+const farmerAssistantPrompt = `
+You are FarmConnect AI, a practical agriculture assistant for Indian farmers.
+Answer farmer questions in simple, respectful language with clear steps.
+Focus on crop planning, soil health, irrigation, pest and disease control, organic and chemical input safety, harvesting, storage, selling, payments, and farm business decisions.
+Ask for missing details when needed: crop, location/state, season, soil type, crop age, visible symptoms, water availability, and budget.
+For pests, diseases, fertilizers, and pesticides, suggest safe diagnosis steps first, mention dose must follow the product label/local agriculture officer, and include protective handling advice.
+For market price, weather, government scheme, legal, financial, or medical questions, say the information can change and recommend checking a trusted local/current source.
+Keep answers concise, practical, and formatted with short bullets when useful.
+`;
+
+const AI_CHAT_MESSAGE_LIMIT = 10;
+
+const aiConversationSchema = new mongoose.Schema({
+    userId: { type: String, required: true, index: true },
+    userEmail: { type: String, default: '' },
+    title: { type: String, required: true },
+    groupNumber: { type: Number, default: 1 },
+    messages: [{
+        speaker: { type: String, enum: ['user', 'ai'], required: true },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now },
+    }],
+}, { timestamps: true });
+
+const AiConversation = mongoose.model('aiconversation', aiConversationSchema);
+
+const getAiUserContext = async (req) => {
+    const token = req.header('auth-token');
+    if (!token) {
+        return {
+            userId: `guest:${req.ip || 'unknown'}`,
+            userEmail: '',
+        };
+    }
+
+    try {
+        const data = jwt.verify(token, JWT_SECRET);
+        const user = await Users.findById(data.user.id).lean();
+        return {
+            userId: String(data.user.id),
+            userEmail: user?.email || '',
+        };
+    } catch (error) {
+        return {
+            userId: `guest:${req.ip || 'unknown'}`,
+            userEmail: '',
+        };
+    }
+};
+
+const getNextAiGroupNumber = async (userId) => {
+    const latestConversation = await AiConversation
+        .findOne({ userId })
+        .sort({ groupNumber: -1 })
+        .select('groupNumber')
+        .lean();
+
+    return (latestConversation?.groupNumber || 0) + 1;
+};
+
+const createAiConversation = async ({ userId, userEmail, title }) => {
+    const groupNumber = await getNextAiGroupNumber(userId);
+    return AiConversation.create({
+        userId,
+        userEmail,
+        title: title || `Farm Chat ${groupNumber}`,
+        groupNumber,
+        messages: [],
+    });
+};
+
+const formatAiConversation = (conversation) => ({
+    id: conversation._id,
+    title: conversation.title,
+    groupNumber: conversation.groupNumber,
+    messageCount: conversation.messages?.length || 0,
+    messages: conversation.messages || [],
+    updatedAt: conversation.updatedAt,
+    createdAt: conversation.createdAt,
+});
+
+const buildAiTitle = (question) => {
+    const cleanQuestion = question.replace(/\s+/g, ' ').trim();
+    return cleanQuestion.length > 42 ? `${cleanQuestion.slice(0, 42)}...` : cleanQuestion;
+};
+
+app.get('/api/ai/conversations', async (req, res) => {
+    try {
+        const { userId } = await getAiUserContext(req);
+        const conversations = await AiConversation
+            .find({ userId })
+            .sort({ updatedAt: -1 })
+            .select('title groupNumber messages createdAt updatedAt')
+            .lean();
+
+        res.json({
+            success: true,
+            conversations: conversations.map(formatAiConversation),
+        });
+    } catch (error) {
+        console.error('AI conversation list error:', error.message);
+        res.status(500).json({ success: false, error: 'Unable to load AI chat history.' });
+    }
+});
+
+app.get('/api/ai/conversations/:id', async (req, res) => {
+    try {
+        const { userId } = await getAiUserContext(req);
+        const conversation = await AiConversation.findOne({
+            _id: req.params.id,
+            userId,
+        }).lean();
+
+        if (!conversation) {
+            return res.status(404).json({ success: false, error: 'AI chat group not found.' });
+        }
+
+        res.json({ success: true, conversation: formatAiConversation(conversation) });
+    } catch (error) {
+        console.error('AI conversation detail error:', error.message);
+        res.status(500).json({ success: false, error: 'Unable to load AI chat group.' });
+    }
+});
+
+app.post('/api/ai/conversations', async (req, res) => {
+    try {
+        const userContext = await getAiUserContext(req);
+        const conversation = await createAiConversation({
+            ...userContext,
+            title: req.body.title,
+        });
+
+        res.status(201).json({
+            success: true,
+            conversation: formatAiConversation(conversation.toObject()),
+        });
+    } catch (error) {
+        console.error('AI conversation create error:', error.message);
+        res.status(500).json({ success: false, error: 'Unable to create AI chat group.' });
+    }
+});
+
+app.post('/api/ai/farmer-assistant', async (req, res) => {
+    try {
+        const question = typeof req.body.question === 'string' ? req.body.question.trim() : '';
+        const requestedConversationId = req.body.conversationId;
+
+        if (!question) {
+            return res.status(400).json({ success: false, error: 'Question is required.' });
+        }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({
+                success: false,
+                error: 'Groq API key is not configured on the backend.',
+            });
+        }
+
+        const userContext = await getAiUserContext(req);
+        let conversation = null;
+
+        if (requestedConversationId) {
+            conversation = await AiConversation.findOne({
+                _id: requestedConversationId,
+                userId: userContext.userId,
+            });
+        }
+
+        if (!conversation || conversation.messages.length + 2 > AI_CHAT_MESSAGE_LIMIT) {
+            conversation = await createAiConversation({
+                ...userContext,
+                title: buildAiTitle(question),
+            });
+        }
+
+        const messages = [
+            { role: 'system', content: farmerAssistantPrompt },
+            ...conversation.messages.slice(-8).map((entry) => ({
+                role: entry.speaker === 'user' ? 'user' : 'assistant',
+                content: String(entry.text || '').slice(0, 1200),
+            })).filter((entry) => entry.content.trim()),
+            { role: 'user', content: question },
+        ];
+
+        const groqResponse = await axios.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            {
+                model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+                messages,
+                temperature: 0.35,
+                max_completion_tokens: 900,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                timeout: 30000,
+            }
+        );
+
+        const answer = groqResponse.data?.choices?.[0]?.message?.content?.trim();
+        if (!answer) {
+            return res.status(502).json({
+                success: false,
+                error: 'Groq did not return an answer. Please try again.',
+            });
+        }
+
+        conversation.messages.push(
+            { speaker: 'user', text: question },
+            { speaker: 'ai', text: answer }
+        );
+
+        if (!conversation.title || conversation.title.startsWith('Farm Chat') || conversation.title === 'New farm chat') {
+            conversation.title = buildAiTitle(question);
+        }
+
+        await conversation.save();
+
+        res.json({
+            success: true,
+            answer,
+            conversation: formatAiConversation(conversation.toObject()),
+        });
+    } catch (error) {
+        console.error('Groq farmer assistant error:', error.response?.data || error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Unable to connect to FarmConnect AI right now. Please try again.',
+        });
+    }
 });
 
 // Schema for creating products
@@ -2037,9 +2414,10 @@ cron.schedule('* * * * *', async () => {
 app.use(errorHandler);
 
 // Start the server
-app.listen(port, (error) => {
+server.listen(port, (error) => {
     if (!error) {
         console.log("Server Running on port " + port);
+        console.log("Socket.IO chat server is active");
     } else {
         console.log("Error : " + error);
     }

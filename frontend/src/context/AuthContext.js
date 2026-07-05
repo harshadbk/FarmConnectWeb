@@ -23,6 +23,12 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authAPI.getUser();
       setUser(userData);
+      if (userData?.latitude != null) {
+        localStorage.setItem('user-lat', userData.latitude);
+      }
+      if (userData?.longitude != null) {
+        localStorage.setItem('user-lon', userData.longitude);
+      }
       setError(null);
     } catch (err) {
       console.error('Failed to load user:', err);
@@ -47,6 +53,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('auth-token', response.token);
       localStorage.setItem('user-email', response.user.email);
       localStorage.setItem('user-name', response.user.name);
+      if (response.user?.latitude != null) {
+        localStorage.setItem('user-lat', response.user.latitude);
+      }
+      if (response.user?.longitude != null) {
+        localStorage.setItem('user-lon', response.user.longitude);
+      }
       if (roleValue) {
         localStorage.setItem('role', roleValue);
       }
@@ -97,6 +109,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('auth-token', response.token);
       localStorage.setItem('user-email', response.user.email);
       localStorage.setItem('user-name', response.user.name);
+      if (response.user?.latitude != null) {
+        localStorage.setItem('user-lat', response.user.latitude);
+      }
+      if (response.user?.longitude != null) {
+        localStorage.setItem('user-lon', response.user.longitude);
+      }
       if (roleValue) {
         localStorage.setItem('role', roleValue);
       }
@@ -117,6 +135,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('auth-token');
     localStorage.removeItem('user-email');
     localStorage.removeItem('user-name');
+    localStorage.removeItem('user-lat');
+    localStorage.removeItem('user-lon');
     setToken(null);
     setUser(null);
     setError(null);

@@ -231,4 +231,29 @@ export const subscriptionAPI = {
   },
 };
 
+// Farmer AI Assistant API
+export const aiAPI = {
+  getConversations: async () => {
+    return fetchAPI('/api/ai/conversations');
+  },
+
+  getConversation: async (conversationId) => {
+    return fetchAPI(`/api/ai/conversations/${conversationId}`);
+  },
+
+  createConversation: async (title) => {
+    return fetchAPI('/api/ai/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
+  },
+
+  askFarmerAssistant: async (question, conversationId) => {
+    return fetchAPI('/api/ai/farmer-assistant', {
+      method: 'POST',
+      body: JSON.stringify({ question, conversationId }),
+    });
+  },
+};
+
 export default fetchAPI;
