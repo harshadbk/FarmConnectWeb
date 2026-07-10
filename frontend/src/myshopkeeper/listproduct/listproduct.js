@@ -7,7 +7,7 @@ const ListProduct = () => {
   const [allproducts,setallproducts]=useState([]);
 
   const fetchinfo = async ()=>{
-    await fetch('http://127.0.0.1:5000/allsproducts',{
+    await fetch('http://13.233.124.185/allsproducts',{
       method: 'POST',
       headers: {
           'Accept': 'application/json',
@@ -24,7 +24,7 @@ const ListProduct = () => {
   },[])
 
   const remove_product = async (id)=>{
-    await fetch('http://127.0.0.1:5000/removeproduct',{
+    await fetch('http://13.233.124.185/removeproduct',{
        method:'POST',
        headers:{
         Accept:'application/json',

@@ -23,7 +23,7 @@ const Rworkers = () => {
   // Fetch worker information from the backend
   const fetchWorkersInfo = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/rworkers');
+      const response = await fetch('http://13.233.124.185/rworkers');
       const workersData = await response.json();
       setRworkers(workersData);
     } catch (error) {
@@ -34,7 +34,7 @@ const Rworkers = () => {
   // Fetch user location data
   const fetchUserLocation = async () => {
     try {
-      const response = await fetch('http://localhost:5000/workersuser');
+      const response = await fetch('http://13.233.124.185/workersuser');
       const userData = await response.json();
       setLat(userData);
     } catch (error) {

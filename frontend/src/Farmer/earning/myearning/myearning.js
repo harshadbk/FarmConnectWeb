@@ -7,7 +7,7 @@ const Myearning = () => {
 
   const fetchInvestInfo = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/finvest');
+      const response = await fetch('http://13.233.124.185/finvest');
       const data = await response.json();
       setAllInvest(data);
     } catch (error) {
@@ -18,7 +18,7 @@ const Myearning = () => {
 
   const fetchEarnInfo = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/fearning');
+      const response = await fetch('http://13.233.124.185/fearning');
       const data = await response.json();
       setAllEarn(data);
     } catch (error) {

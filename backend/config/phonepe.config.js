@@ -23,7 +23,7 @@ const phonePeConfig = {
     ].filter(Boolean),
 
     // Application URLs
-    backendUrl: process.env.BACKEND_URL || 'http://localhost:5000',
+    backendUrl: process.env.BACKEND_URL || 'http://13.233.124.185',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 
     // Simulator/testing support (optional)

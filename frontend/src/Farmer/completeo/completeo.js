@@ -7,7 +7,7 @@ const Completeo = () => {
   
     const fetchInfo = async () => {
   
-      await fetch('http://127.0.0.1:5000/fcomplete', {
+      await fetch('http://13.233.124.185/fcomplete', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

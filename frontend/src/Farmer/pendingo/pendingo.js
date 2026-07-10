@@ -7,7 +7,7 @@ const Pendingo = () => {
   
     const fetchInfo = async () => {
   
-      await fetch('http://127.0.0.1:5000/fpending', {
+      await fetch('http://13.233.124.185/fpending', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

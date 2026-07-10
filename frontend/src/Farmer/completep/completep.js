@@ -6,7 +6,7 @@ const Completep = () => {
 
     const fetchCompletedOrders = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/fcompletep', {
+            const response = await fetch('http://13.233.124.185/fcompletep', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

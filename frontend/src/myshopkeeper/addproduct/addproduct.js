@@ -66,7 +66,7 @@ const AddProduct = () => {
 
     let responseData;
 
-    await fetch('http://127.0.0.1:5000/upload', {
+    await fetch('http://13.233.124.185/upload', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -99,7 +99,7 @@ const AddProduct = () => {
       product.options = parseOptionsText(productDetails.optionsText);
 
       console.log(product);
-      await fetch('http://127.0.0.1:5000/addproduct', {
+      await fetch('http://13.233.124.185/addproduct', {
         method: 'POST',
         headers: {
           Accept: 'application/json',

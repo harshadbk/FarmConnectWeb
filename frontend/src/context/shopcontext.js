@@ -15,7 +15,7 @@ const ShopContextProvider = (props) => {
   const [cartItem, setCartItem] = useState(getDefaultCart());
 
   useEffect(() => {
-    fetch('http://127.0.0.1:5000/allproducts')
+    fetch('http://13.233.124.185/allproducts')
       .then((resp) => {
         if (!resp.ok) {
           throw new Error('Network response was not ok');
@@ -30,7 +30,7 @@ const ShopContextProvider = (props) => {
           const image = p.image
             ? String(p.image).startsWith('http')
               ? p.image
-              : `http://127.0.0.1:5000/${String(p.image).replace(/^\/+/, '')}`
+              : `http://13.233.124.185/${String(p.image).replace(/^\/+/, '')}`
             : '';
           const new_price = p.new_price !== undefined ? Number(p.new_price) : p.newPrice !== undefined ? Number(p.newPrice) : null;
           const old_price = p.old_price !== undefined ? Number(p.old_price) : p.oldPrice !== undefined ? Number(p.oldPrice) : null;
@@ -51,7 +51,7 @@ const ShopContextProvider = (props) => {
       });
 
     if (localStorage.getItem('auth-token')) {
-      fetch('http://127.0.0.1:5000/getcart', {
+      fetch('http://13.233.124.185/getcart', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -80,7 +80,7 @@ const ShopContextProvider = (props) => {
     }));
 
     if (localStorage.getItem('auth-token')) {
-      fetch('http://127.0.0.1:5000/addtocart', {
+      fetch('http://13.233.124.185/addtocart', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -119,7 +119,7 @@ const ShopContextProvider = (props) => {
         console.error('No authentication token found.');
         return;
       }
-      const response = await fetch('http://127.0.0.1:5000/removefromcart', {
+      const response = await fetch('http://13.233.124.185/removefromcart', {
         method: 'POST',
         headers: {
           Accept: 'application/json',

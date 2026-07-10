@@ -713,9 +713,9 @@ app.get('/seed-products', async (req, res) => {
         const getImageUrl = (index) => {
             if (uploadedImages.length > 0) {
                 const imgIndex = index % uploadedImages.length;
-                return `http://localhost:5000/images/${uploadedImages[imgIndex]}`;
+                return `http://13.233.124.185/images/${uploadedImages[imgIndex]}`;
             }
-            return `http://localhost:5000/images/placeholder.jpg`;
+            return `http://13.233.124.185/images/placeholder.jpg`;
         };
 
         // Sample products for all categories

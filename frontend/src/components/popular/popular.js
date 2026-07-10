@@ -7,7 +7,7 @@ const Popular = () => {
   const [popular,setpapular] = useState([]);
 
   useEffect(()=>{
-   fetch('http://127.0.0.1:5000/popularinonion')
+   fetch('http://13.233.124.185/popularinonion')
    .then((resp)=>resp.json())
    .then((data)=>setpapular(data));
   },[])
