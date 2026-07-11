@@ -119,8 +119,6 @@ const handleCallback = async (req, res) => {
 
         // Redirect user to a backend-served callback page which then
         // displays the result and offers a link to the frontend success route.
-        // This prevents "connection refused" errors when the frontend dev
-        // server is not running on the client machine.
         const statusParam = isSuccess ? 'success' : 'failed';
         const redirectUrl = `${phonePeConfig.backendUrl}/payment-callback?status=${statusParam}&id=${encodeURIComponent(merchantTransactionId)}`;
 

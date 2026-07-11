@@ -242,9 +242,10 @@ app.post("/upload", (req, res) => {
                 error: "No file uploaded"
             });
         }
+        const baseUrl = process.env.BACKEND_URL || 'http://13.233.124.185';
         res.json({
             success: 1,
-            image_url: `http://localhost:${port}/images/${req.file.filename}`,
+            image_url: `${baseUrl}/images/${req.file.filename}`,
         });
     });
 });
