@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const merchant_id = process.env.PHONEPE_MERCHANT_ID || "PGTESTPAYUAT86";
 const salt_key = process.env.PHONEPE_SALT_KEY || "96434309-7796-489d-8924-ab56988a6076";
-const frontendBaseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+const frontendBaseUrl = process.env.FRONTEND_URL || "http://farm-connect-frontend.s3-website.ap-south-1.amazonaws.com";
 const orderBackendUrl = process.env.ORDER_BACKEND_URL || "http://13.233.124.185";
 const paymentCallbackUrl = process.env.PAYMENT_CALLBACK_URL || `${frontendBaseUrl}/payment-callback`;
 
