@@ -20,7 +20,7 @@ const Addwork = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        await fetch('http://13.233.124.185/addFarmingWork', {
+        await fetch('http://13.233.124.185:5000/addFarmingWork', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

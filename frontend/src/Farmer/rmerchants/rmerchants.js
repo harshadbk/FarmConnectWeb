@@ -22,7 +22,7 @@ const Rmerchants = () => {
 
   const fetchMerchants = async () => {
     try {
-      const merchantResponse = await fetch('http://13.233.124.185/rmerchants');
+      const merchantResponse = await fetch('http://13.233.124.185:5000/rmerchants');
       const merchantData = await merchantResponse.json();
       setMerchants(merchantData);
     } catch (error) {
@@ -32,7 +32,7 @@ const Rmerchants = () => {
 
   const fetchUserLocation = async () => {
     try {
-      const locationResponse = await fetch('http://13.233.124.185/merchantuser');
+      const locationResponse = await fetch('http://13.233.124.185:5000/merchantuser');
       const locationData = await locationResponse.json();
       setUserLocation(locationData);
     } catch (error) {

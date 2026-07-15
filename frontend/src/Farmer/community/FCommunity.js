@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { io } from 'socket.io-client';
 import './FCommunity.css';
 
-const socket = io('http://13.233.124.185', { transports: ['websocket'] });
+const socket = io('http://13.233.124.185:5000', { transports: ['websocket'] });
 
 const FCommunity = () => {
     const [name, setName] = useState(localStorage.getItem('user-name') || '');
@@ -50,7 +50,7 @@ const FCommunity = () => {
         const lat = Number(localStorage.getItem('user-lat'));
         const lon = Number(localStorage.getItem('user-lon'));
         if (email && !Number.isNaN(lat) && !Number.isNaN(lon)) {
-            fetch(`http://13.233.124.185/api/chat/nearby-users?email=${encodeURIComponent(email)}&lat=${lat}&lon=${lon}`)
+            fetch(`http://13.233.124.185:5000/api/chat/nearby-users?email=${encodeURIComponent(email)}&lat=${lat}&lon=${lon}`)
                 .then((res) => res.json())
                 .then((data) => setNearbyUsers(data.users || []))
                 .catch(() => setNearbyUsers([]));
@@ -58,7 +58,7 @@ const FCommunity = () => {
             navigator.geolocation.getCurrentPosition((position) => {
                 localStorage.setItem('user-lat', position.coords.latitude);
                 localStorage.setItem('user-lon', position.coords.longitude);
-                fetch(`http://13.233.124.185/api/chat/nearby-users?email=${encodeURIComponent(email)}&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
+                fetch(`http://13.233.124.185:5000/api/chat/nearby-users?email=${encodeURIComponent(email)}&lat=${position.coords.latitude}&lon=${position.coords.longitude}`)
                     .then((res) => res.json())
                     .then((data) => setNearbyUsers(data.users || []))
                     .catch(() => setNearbyUsers([]));

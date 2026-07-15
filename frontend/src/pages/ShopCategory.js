@@ -30,7 +30,7 @@ const ShopCategory = (props) => {
     const fetchCategoryProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://13.233.124.185/product/category/${props.category}`);
+        const response = await fetch(`http://13.233.124.185:5000/product/category/${props.category}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

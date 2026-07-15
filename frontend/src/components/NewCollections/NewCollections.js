@@ -7,7 +7,7 @@ const NewCollections = () => {
   const [new_collections,set_new_collections] = useState([]);
 
   useEffect(()=>{
-   fetch('http://13.233.124.185/newcollection')
+   fetch('http://13.233.124.185:5000/newcollection')
    .then((resp)=>resp.json())
    .then((data)=>set_new_collections(data));
   },[])

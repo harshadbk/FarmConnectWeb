@@ -20,7 +20,7 @@ const Feedback = () => {
         e.preventDefault();
         console.log('Feedback Submitted:', feedback);
 
-        await fetch('http://13.233.124.185/addfeedback', {
+        await fetch('http://13.233.124.185:5000/addfeedback', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',

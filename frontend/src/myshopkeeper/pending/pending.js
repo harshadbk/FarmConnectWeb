@@ -7,7 +7,7 @@ const Pending = () => {
 
   const fetchInfo = async () => {
 
-    await fetch('http://13.233.124.185/spending', {
+    await fetch('http://13.233.124.185:5000/spending', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',

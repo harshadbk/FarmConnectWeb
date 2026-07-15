@@ -22,7 +22,7 @@ const Rfarmers = () => {
 
 
   const fetchinfo = async () => {
-    await fetch('http://13.233.124.185/rfarmers')
+    await fetch('http://13.233.124.185:5000/rfarmers')
       .then((resp) => resp.json())
       .then((data) => {
         setRfarmers(data);
@@ -30,7 +30,7 @@ const Rfarmers = () => {
   };
 
   const fetchinfo2 = async () => {
-    await fetch('http://13.233.124.185/farmeruser')
+    await fetch('http://13.233.124.185:5000/farmeruser')
       .then((resp) => resp.json())
       .then((data) => {
         setLat(data);

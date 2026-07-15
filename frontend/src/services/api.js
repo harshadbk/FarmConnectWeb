@@ -1,7 +1,7 @@
 // API Service Layer for FarmConnect
 // All backend API calls are centralized here
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://13.233.124.185';
+const API_URL = process.env.REACT_APP_API_URL || 'http://3.110.127.136/:5000';
 
 // Create an API client with default headers
 const apiClient = {

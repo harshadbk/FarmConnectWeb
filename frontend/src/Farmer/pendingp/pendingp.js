@@ -6,7 +6,7 @@ const Pendingp = () => {
 
     const fetchCompletedOrders = async () => {
         try {
-            const response = await fetch('http://13.233.124.185/fpendingp', {
+            const response = await fetch('http://13.233.124.185:5000/fpendingp', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

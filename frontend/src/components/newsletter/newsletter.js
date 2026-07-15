@@ -15,7 +15,7 @@ const NewsLetter = () => {
   const subscribe = async () => {
     console.log("Subscribe operation executes ", subscribers);
     let response;
-    await fetch('http://13.233.124.185/subscribe', {
+    await fetch('http://13.233.124.185:5000/subscribe', {
       method: 'POST',
       headers: {
         Accept: 'application/form-data',
@@ -35,7 +35,7 @@ const NewsLetter = () => {
 
   const remove = async (email)=>{
 
-   let response = await fetch('http://13.233.124.185/unsub',{
+   let response = await fetch('http://13.233.124.185:5000/unsub',{
       method:'POST',
       headers:{
         Accept:'application/json',

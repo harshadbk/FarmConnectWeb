@@ -25,7 +25,7 @@ const RelatedProducts = () => {
     // fallback: fetch directly if context not populated
     const fetchRelatedProducts = async () => {
       try {
-        const response = await fetch('http://13.233.124.185/allproducts');
+        const response = await fetch('http://13.233.124.185:5000/allproducts');
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }

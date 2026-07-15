@@ -18,7 +18,7 @@ const AddMyEarning = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         console.log(earning);
-        await fetch('http://13.233.124.185/income', {
+        await fetch('http://13.233.124.185:5000/income', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',

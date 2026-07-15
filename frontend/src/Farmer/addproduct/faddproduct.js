@@ -40,7 +40,7 @@ const Addproduct = () => {
 
     let responseData;
 
-    await fetch('http://13.233.124.185/upload', {
+    await fetch('http://13.233.124.185:5000/upload', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -55,7 +55,7 @@ const Addproduct = () => {
     if (responseData && responseData.success) {
       product.image = responseData.image_url;
       console.log(product);
-      await fetch('http://13.233.124.185/addfproduct', {
+      await fetch('http://13.233.124.185:5000/addfproduct', {
         method: 'POST',
         headers: {
           Accept: 'application/json',

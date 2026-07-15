@@ -22,7 +22,7 @@ const Profile = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch('http://13.233.124.185/peruser', {
+            const response = await fetch('http://13.233.124.185:5000/peruser', {
                 headers: {
                     'auth-token': localStorage.getItem('auth-token')
                 }
@@ -58,7 +58,7 @@ const Profile = () => {
     const handleSaveClick = async () => {
         console.log(info);
         try {
-            const response = await fetch('http://13.233.124.185/farmerd', {
+            const response = await fetch('http://13.233.124.185:5000/farmerd', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -81,7 +81,7 @@ const Profile = () => {
 
     const fetchFarmer = async () => {
         try {
-            const response = await fetch('http://13.233.124.185/perfarmer', {
+            const response = await fetch('http://13.233.124.185:5000/perfarmer', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -122,7 +122,7 @@ const Profile = () => {
     const handleShSaveClick = async () => {
         console.log(shinfo);
         try {
-            const response = await fetch('http://13.233.124.185/shopkeeperd', {
+            const response = await fetch('http://13.233.124.185:5000/shopkeeperd', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -146,7 +146,7 @@ const Profile = () => {
 
     const fetShop = async () => {
         try {
-            const response = await fetch('http://13.233.124.185/pershop', {
+            const response = await fetch('http://13.233.124.185:5000/pershop', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -185,7 +185,7 @@ const Profile = () => {
 
     const handlemrsaveclick =async ()=>{
         try{
-            const response = await fetch('http://13.233.124.185/merchantd',{
+            const response = await fetch('http://13.233.124.185:5000/merchantd',{
                 method:'POST',
                 headers:{
                     Accept:'application/json',
@@ -209,7 +209,7 @@ const Profile = () => {
     const fetchmer = async ()=>{
         try{
 
-            const response = await fetch('http://13.233.124.185/permerchant',{
+            const response = await fetch('http://13.233.124.185:5000/permerchant',{
                 method:'POST',
                 headers:{
                     'Accept':'application/json',
@@ -248,7 +248,7 @@ const Profile = () => {
     const whandleSaveClick = async () => {
         console.log(winfo);
         try {
-            const response = await fetch('http://13.233.124.185/workerd', {
+            const response = await fetch('http://13.233.124.185:5000/workerd', {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -271,7 +271,7 @@ const Profile = () => {
 
     const fetWorker = async () => {
         try {
-            const response = await fetch('http://13.233.124.185/perworker', {
+            const response = await fetch('http://13.233.124.185:5000/perworker', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

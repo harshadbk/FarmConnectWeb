@@ -78,17 +78,36 @@ const LoginSignup = () => {
     }
   };
 
+  const getGeolocation = () => {
+    return new Promise((resolve) => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude }),
+          (error) => {
+            console.error("Geolocation error:", error);
+            resolve({ lat: 0, lon: 0 });
+          }
+        );
+      } else {
+        resolve({ lat: 0, lon: 0 });
+      }
+    });
+  };
+
   const handleSignup = async () => {
     if (!validateSignupForm()) return;
 
     setLoading(true);
     setErrorMessage("");
     try {
+      const { lat, lon } = await getGeolocation();
       await signup({
         username: formdata.username,
         email: formdata.email,
         password: formdata.password,
         role: formdata.role,
+        latitude: lat,
+        longitude: lon,
       });
       setSuccessMessage("Signup successful! Redirecting to profile...");
       setTimeout(() => navigate("/profile"), 1500);

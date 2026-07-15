@@ -21,11 +21,11 @@ const Rshopkeeper = () => {
 
   const fetchShopkeepers = async () => {
     try {
-      const shopkeeperData = await fetch('http://13.233.124.185/rshopkeepers');
+      const shopkeeperData = await fetch('http://13.233.124.185:5000/rshopkeepers');
       const shopkeepersJson = await shopkeeperData.json();
       setAllShopkeepers(shopkeepersJson);
 
-      const userData = await fetch('http://13.233.124.185/shopkeeperuser');
+      const userData = await fetch('http://13.233.124.185:5000/shopkeeperuser');
       const userJson = await userData.json();
       setShopkeepers(userJson);
     } catch (error) {

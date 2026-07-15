@@ -30,7 +30,7 @@ const ProductDisplay = ({ product }) => {
   const handleOnClick = () => {
     const descriptionText = product.description
       ? product.description
-      : "उर्वरक कोई भी प्राकृतिक या सिंथेटिक सामग्री है जो मिट्टी या पौधे पर लागू की जाती है।";
+      : "This design ensures that all product images are consistently sized and provides a visually appealing, interactive experience for users. The combination of clean lines, smooth animations, and subtle effects should make the ProductDisplay component delightful to use.";
 
     const chunks = descriptionText.match(/.{1,1000}/g);
 
@@ -67,7 +67,7 @@ const ProductDisplay = ({ product }) => {
     }
 
     try {
-      const response = await fetch('http://13.233.124.185/shopkeeperdatas', {
+      const response = await fetch('http://13.233.124.185:5000/shopkeeperdatas', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
